@@ -4,12 +4,12 @@ A highly configurable, accessible menu component that supports keyboard navigati
 
 ## Features
 
-- ✅ **Keyboard Navigation**: Full arrow key support, tab navigation, and escape key handling
-- ✅ **Mobile-First**: Responsive design with configurable breakpoints
-- ✅ **ARIA Compliant**: Proper ARIA attributes for screen readers
-- ✅ **Configurable**: Customize CSS classes, breakpoints, and behavior
-- ✅ **Framework Agnostic**: Works with any framework or vanilla JavaScript
-- ✅ **TypeScript Support**: Full type definitions included
+- **Keyboard Navigation**: Full arrow key support, tab navigation, and escape key handling
+- **Mobile-First**: Responsive design with configurable breakpoints
+- **ARIA Compliant**: Proper ARIA attributes for screen readers
+- **Configurable**: Customize CSS classes, breakpoints, and behavior
+- **Framework Agnostic**: Works with any framework or vanilla JavaScript
+- **TypeScript Support**: Full type definitions included
 
 ## Installation
 
@@ -96,7 +96,7 @@ menu.init();
 | `linkClass`               | `string`         | `'menu__link'`      | CSS class for menu links                    |
 | `itemClass`               | `string`         | `'menu__item'`      | CSS class for menu items                    |
 | `mobileBreakpoint`        | `number`         | `768`               | Mobile breakpoint in pixels                 |
-| `mobileControlId`         | `string \| null` | `null`              | ID of the mobile menu control button        |
+| `mobileControlId`         | `string \| null` | `'nav-trigger'`       | ID of the mobile menu control button        |
 | `dataBreakpointAttribute` | `string`         | `'data-breakpoint'` | Data attribute for custom breakpoint        |
 | `dataMobileAttribute`     | `string`         | `'data-mobile'`     | Data attribute for mobile control reference |
 | `dataPluginIdAttribute`   | `string`         | `'data-plugin-id'`  | Data attribute for plugin ID                |
@@ -255,11 +255,6 @@ The component automatically adds these CSS classes:
 - `js-prevent-scroll` - Added to `<body>` when mobile menu is open
 - Various ARIA attributes (`aria-expanded`, `aria-controls`, `aria-haspopup`, etc.)
 
-## Browser Support
-
-- Modern browsers (Chrome, Firefox, Safari, Edge)
-- IE11+ (with polyfills for modern JavaScript features)
-
 ## Dependencies
 
 No external dependencies! The package is completely self-contained.
@@ -298,7 +293,7 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Accessibility
 
-This component follows WCAG 2.1 AA guidelines and implements WAI-ARIA best practices for navigation menus. It has been tested with screen readers and keyboard-only navigation.
+To the best of our ability this library follows WCAG 2.2 AA guidelines and implements WAI-ARIA best practices for navigation menus. It has been tested with screen readers and keyboard-only navigation.
 
 ## Changelog
 

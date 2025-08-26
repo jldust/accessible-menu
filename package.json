@@ -28,7 +28,7 @@
     "aria"
   ],
   "author": "Jennifer Dust",
-  "license": "GPL",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/jldust/accessible-menu.git",
