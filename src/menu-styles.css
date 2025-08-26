@@ -1,0 +1,225 @@
+/**
+ * Accessible Menu - Basic Styles
+ * CSS styles for menu open/close behavior and basic layout
+ */
+
+/* Reset styles for menu lists */
+.c-menu ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Top level menu wrapper styles */
+.c-menu ul[data-depth='0'] {
+  margin: 0;
+  width: fit-content;
+  list-style: none;
+}
+
+/* Desktop layout for top-level menu */
+@media (min-width: 769px) {
+  .c-menu ul[data-depth='0'] {
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem; /* 24px */
+  }
+}
+
+/* Menu button styles */
+.c-menu ul[data-depth='0'] li > button {
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.4;
+  align-items: center;
+  background: white;
+  border: none;
+  display: flex;
+  flex-direction: row;
+  padding: 0.25rem 0; /* 4px 0 */
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.c-menu ul[data-depth='0'] li > button:hover {
+  cursor: pointer;
+}
+
+/* Icon rotation for expanded buttons */
+.c-menu ul[data-depth='0'] li > button[aria-expanded='true'] .icon {
+  transform: rotate(180deg);
+}
+
+/* Secondary level menu wrapper styles */
+.c-menu ul[data-depth='1'] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 769px) {
+  .c-menu ul[data-depth='1'] {
+    position: absolute;
+  }
+}
+
+.c-menu ul[data-depth='1'] .menu__item {
+  margin: 0;
+  padding: 0;
+}
+
+/* Menu link focus and hover styles */
+.c-menu ul[data-depth='1'] a.menu__item,
+.c-menu ul[data-depth='1'] a.menu__link {
+  display: block;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  color: inherit;
+}
+
+.c-menu ul[data-depth='1'] a.menu__item:focus,
+.c-menu ul[data-depth='1'] a.menu__item:hover,
+.c-menu ul[data-depth='1'] a.menu__link:focus,
+.c-menu ul[data-depth='1'] a.menu__link:hover {
+  cursor: pointer;
+  background-color: #f0f0f0;
+}
+
+.c-menu ul[data-depth='1'] a.menu__item:focus-visible,
+.c-menu ul[data-depth='1'] a.menu__link:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid -webkit-focus-ring-color;
+  outline-offset: 2px;
+}
+
+/* All sub-menus styles beyond first level */
+.c-menu ul:not([data-depth='0']) {
+  margin: 0;
+  padding: 0;
+}
+
+/* CRITICAL: Sub-menu open/close animations */
+/* Hidden state - when button aria-expanded="false" */
+.c-menu nav ul.menu button[aria-expanded='false'] + *:not([data-depth='0']),
+.c-menu ul.menu button[aria-expanded='false'] + *:not([data-depth='0']) {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-10px);
+  transition: max-height 0.25s ease-in-out,
+              opacity 0.25s ease-in-out,
+              transform 0.25s ease-in-out,
+              visibility 0.25s ease-in;
+  visibility: hidden;
+  z-index: 1;
+}
+
+/* Visible state - when button aria-expanded="true" */
+.c-menu nav ul.menu button[aria-expanded='true'] + *:not([data-depth='0']),
+.c-menu ul.menu button[aria-expanded='true'] + *:not([data-depth='0']) {
+  max-height: 1000px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: max-height 0.25s ease-in-out,
+              opacity 0.25s ease-in-out,
+              transform 0.25s ease-in-out,
+              visibility 0.25s ease-in;
+  visibility: visible;
+  z-index: 10;
+}
+
+/* Span menus (megamenus) display as always open */
+.c-menu nav li > span + *:not([data-depth='0']),
+.c-menu li > span + *:not([data-depth='0']) {
+  opacity: 1;
+  visibility: visible;
+  transition: transform 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 1s;
+  z-index: 10;
+}
+
+/* Mobile menu trigger label styles */
+.c-menu .js-mobile-nav-trigger .label {
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .c-menu .js-mobile-nav-trigger .label {
+    display: inline-block;
+  }
+}
+
+/* Mobile menu styles */
+@media (max-width: 768px) {
+  /* Hidden mobile menu */
+  .c-menu .js-mobile-nav-trigger[aria-expanded='false'] + .c-menu-mobile {
+    opacity: 0;
+    visibility: hidden;
+    transform: translate3d(375px, 0, 0);
+  }
+
+  /* Visible mobile menu */
+  .c-menu .js-mobile-nav-trigger[aria-expanded='true'] + .c-menu-mobile {
+    opacity: 1;
+    visibility: visible;
+    overflow-y: auto;
+    transform: translate3d(0, 0, 0);
+    z-index: 3;
+  }
+
+  /* Prevent body scroll when mobile menu is open */
+  body.js-prevent-scroll {
+    overflow: hidden;
+  }
+
+  /* Mobile menu layout adjustments */
+  .c-menu ul[data-depth='0'] {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .c-menu ul[data-depth='1'] {
+    position: static;
+    margin-left: 1rem;
+  }
+}
+
+/* Additional utility styles */
+.c-menu button.menu__link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  width: 100%;
+}
+
+.c-menu .menu__link {
+  display: block;
+  padding: 0.5rem 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.c-menu .menu__link:hover,
+.c-menu .menu__link:focus {
+  text-decoration: underline;
+}
+
+/* Basic dropdown styling */
+.c-menu ul[data-depth='1'] {
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  padding: 0.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .c-menu ul[data-depth='1'] {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+}

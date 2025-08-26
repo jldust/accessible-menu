@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessible Menu Example</title>
+    <!-- Include the menu styles -->
+    <link rel="stylesheet" href="../src/menu-styles.css">
+    <style>
+        /* Additional demo-specific styling */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .c-menu {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        #mobile-toggle {
+            padding: 1rem;
+            background: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        @media (min-width: 769px) {
+            #mobile-toggle {
+                display: none;
+            }
+        }
+        
+        main {
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .demo-content {
+            line-height: 1.6;
+        }
+        
+        .demo-content ul {
+            margin: 1rem 0;
+            padding-left: 2rem;
+        }
+        
+        .demo-content li {
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <button id="mobile-toggle" aria-expanded="false">Menu</button>
+    
+    <nav class="c-menu" data-breakpoint="768" data-mobile="#mobile-toggle">
+        <ul class="menu">
+            <li class="menu__item">
+                <a href="#home" class="menu__link">Home</a>
+            </li>
+            <li class="menu__item menu__item--expanded">
+                <button class="menu__link" data-plugin-id="about">About</button>
+                <ul class="menu" data-depth="1">
+                    <li class="menu__item">
+                        <a href="#story" class="menu__link">Our Story</a>
+                    </li>
+                    <li class="menu__item">
+                        <a href="#team" class="menu__link">Team</a>
+                    </li>
+                    <li class="menu__item">
+                        <a href="#history" class="menu__link">History</a>
+                    </li>
+                </ul>
+            </li>
+            <li class="menu__item menu__item--expanded">
+                <button class="menu__link" data-plugin-id="services">Services</button>
+                <ul class="menu" data-depth="1">
+                    <li class="menu__item">
+                        <a href="#design" class="menu__link">Web Design</a>
+                    </li>
+                    <li class="menu__item">
+                        <a href="#development" class="menu__link">Development</a>
+                    </li>
+                    <li class="menu__item">
+                        <a href="#consulting" class="menu__link">Consulting</a>
+                    </li>
+                </ul>
+            </li>
+            <li class="menu__item">
+                <a href="#contact" class="menu__link">Contact</a>
+            </li>
+        </ul>
+    </nav>
+    
+    <main>
+        <div class="demo-content">
+            <h1>Accessible Menu Example</h1>
+            <p>This example demonstrates the accessible menu component with proper CSS styling. Try:</p>
+            <ul>
+                <li>Using arrow keys to navigate the menu</li>
+                <li>Pressing Enter or Space on menu buttons to open submenus</li>
+                <li>Pressing Escape to close submenus</li>
+                <li>Resizing the window to see mobile behavior</li>
+                <li>Using a screen reader to test accessibility</li>
+            </ul>
+            
+            <h2>Menu Features</h2>
+            <ul>
+                <li><strong>Keyboard Navigation:</strong> Full arrow key support</li>
+                <li><strong>ARIA Compliant:</strong> Proper accessibility attributes</li>
+                <li><strong>Mobile Responsive:</strong> Hamburger menu on small screens</li>
+                <li><strong>Smooth Animations:</strong> CSS transitions for open/close</li>
+                <li><strong>Focus Management:</strong> Proper focus indicators and flow</li>
+            </ul>
+        </div>
+    </main>
+    
+    <!-- Include the accessible menu library -->
+    <script src="../dist/index.umd.js"></script>
+    <script>
+        // Initialize the menu with default settings
+        const menu = new AccessibleMenu.AccessibleMenu();
+        menu.init();
+        
+        // Or with custom configuration:
+        /*
+        const menu = new AccessibleMenu.AccessibleMenu({
+            menuSelector: '.c-menu',
+            buttonClass: 'menu__link',
+            linkClass: 'menu__link',
+            mobileBreakpoint: 768
+        });
+        menu.init();
+        */
+    </script>
+</body>
+</html>

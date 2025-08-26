@@ -1,0 +1,47 @@
+{
+  "name": "@jldust/accessible-menu",
+  "version": "1.0.0",
+  "description": "An accessible menu component that supports keyboard navigation, mobile controls, and ARIA attributes",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "src/menu-styles.css",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rollup -c && cp src/index.d.ts dist/index.d.ts && cp src/menu-styles.css dist/menu-styles.css",
+    "dev": "npm run build && concurrently \"rollup -c -w\" \"python3 -m http.server 3000\" && open --new http://localhost:3000/examples/basic.html",
+    "test": "jest",
+    "lint": "eslint src/**/*.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "menu",
+    "navigation",
+    "accessibility",
+    "a11y",
+    "keyboard-navigation",
+    "aria"
+  ],
+  "author": "Jennifer Dust",
+  "license": "GPL",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jldust/accessible-menu.git",
+    "directory": "packages/accessible-menu"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.28.3",
+    "@jest/environment": "^30.0.5",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "concurrently": "^8.2.2",
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5",
+    "jsdom": "^26.1.0",
+    "rollup": "^4.9.6"
+  }
+}
