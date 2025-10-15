@@ -910,9 +910,9 @@ class MenuButton extends MenuLinks {
   }
 
   /**
-   * Closes all expanded buttons within the menu, with specific behavior based on the menu's depth.
+   * Closes expanded buttons within the menu, with specific behavior based on the menu's depth.
    * - If the menu is at the top level (depth 0), it closes all top-level buttons except for `this.buttonNode`.
-   * - For menus not at the top level, it ensures that only one button can be open at a time by closing all other buttons except for `this.buttonNode`.
+   * - For nested menus, it closes only sibling buttons at the same level, preserving parent menu buttons that need to stay open for proper hierarchy.
    * This method is part of the menu management functionality, allowing for better accessibility and user experience by managing the expanded state of menu buttons.
    */
   closeAll() {
@@ -934,14 +934,42 @@ class MenuButton extends MenuLinks {
         })
       }
     } else {
-      // Non-top-level menu: close all other buttons in the entire menu except this one
-      const allButtons = menuContainer.querySelectorAll(`button.${this.config.buttonClass}[aria-expanded="true"]`)
-      allButtons.forEach(button => {
-        if (button !== this.buttonNode) {
-          button.setAttribute('aria-expanded', 'false')
-        }
-      })
+      // Nested menu: close only sibling buttons at the same level, preserve parent hierarchy
+      if (parentMenu) {
+        // Find sibling buttons in the same parent menu
+        const siblingButtons = parentMenu.querySelectorAll(`:scope > .${this.config.itemClass} > button.${this.config.buttonClass}[aria-expanded="true"]`)
+        siblingButtons.forEach(button => {
+          if (button !== this.buttonNode) {
+            button.setAttribute('aria-expanded', 'false')
+          }
+        })
+
+        // Also close any deeper level menus that are not in our hierarchy
+        const allDeeperButtons = menuContainer.querySelectorAll(`ul[data-depth="${currentDepth + 1}"] button.${this.config.buttonClass}[aria-expanded="true"], ul[data-depth="${currentDepth + 2}"] button.${this.config.buttonClass}[aria-expanded="true"], ul[data-depth="${currentDepth + 3}"] button.${this.config.buttonClass}[aria-expanded="true"]`)
+        allDeeperButtons.forEach(button => {
+          // Only close if it's not in our submenu hierarchy
+          if (!this.isInSubmenuHierarchy(button)) {
+            button.setAttribute('aria-expanded', 'false')
+          }
+        })
+      }
     }
+  }
+
+  /**
+   * Checks if a button is within the submenu hierarchy of this button
+   * @param {HTMLElement} button - The button to check
+   * @returns {boolean} - True if the button is in our submenu hierarchy
+   */
+  isInSubmenuHierarchy(button) {
+    // Get the submenu controlled by this button
+    const thisSubmenu = this.menuNode
+    if (!thisSubmenu) {
+      return false
+    }
+
+    // Check if the button is contained within our submenu
+    return thisSubmenu.contains(button)
   }
 
   onBackgroundMousedown(event) {
