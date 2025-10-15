@@ -27,6 +27,7 @@ const DEFAULT_CONFIG = {
   buttonClass: 'menu__link',
   linkClass: 'menu__link',
   itemClass: 'menu__item',
+  megaMenuClass: 'c-mega-menu',
   mobileBreakpoint: 768,
   mobileControlId: 'nav-trigger',
   dataBreakpointAttribute: 'data-breakpoint',
@@ -47,6 +48,7 @@ export class AccessibleMenu {
    * @param {string} config.buttonClass - CSS class for menu buttons
    * @param {string} config.linkClass - CSS class for menu links
    * @param {string} config.itemClass - CSS class for menu items
+   * @param {string} config.megaMenuClass - CSS class for mega menu wrapper
    * @param {number} config.mobileBreakpoint - Mobile breakpoint in pixels
    * @param {string} config.mobileControlId - ID of the mobile menu control button
    * @param {string} config.dataBreakpointAttribute - Data attribute for custom breakpoint
@@ -286,11 +288,11 @@ class MobileMenuController {
     document.body.classList.remove('js-prevent-scroll')
     this.mobileNavButton.setAttribute('aria-expanded', 'false')
 
-    // Close all dropdown sub-menus
-    const menuButtons = this.menuContainer.querySelectorAll(`button.${this.config.buttonClass}`)
-    menuButtons.forEach(button => {
-      button.setAttribute('aria-expanded', 'false')
-    })
+    // Don't close dropdown sub-menus on mobile - buttons should stay open
+    // const menuButtons = this.menuContainer.querySelectorAll(`button.${this.config.buttonClass}`)
+    // menuButtons.forEach(button => {
+    //   button.setAttribute('aria-expanded', 'false')
+    // })
 
     // If escape key, set focus
     if (key === 'Esc' || key === 'Escape') {
@@ -348,9 +350,8 @@ class MenuLinks {
       this.menuitemNodes = Array.from(domNode.querySelectorAll(`.${config.linkClass}`))
     }
 
-    // @TODO: Replace with a more dynamic solution
-    // Check for mega menu
-    const megaMenuWrapper = domNode.closest('.c-mega-menu__wrapper')
+    // Check for mega menu using dynamic config
+    const megaMenuWrapper = domNode.closest(`.${config.megaMenuClass}`)
     if (megaMenuWrapper) {
       const megaMenuLinks = Array.from(megaMenuWrapper.querySelectorAll(`.${config.linkClass}`))
       this.menuitemNodes = [...this.menuitemNodes, ...megaMenuLinks]
@@ -423,11 +424,51 @@ class MenuLinks {
     }
   }
 
+  /**
+   * Handles the 'Down Arrow' key event for a menu item.
+   *
+   * @param {HTMLElement} target - The current active menu item.
+   *
+   * This method finds the next sibling menu item of the current active menu item.
+   * If such a sibling menu item exists and it contains a link, it focuses on that link.
+   * Otherwise, it finds the closest parent 'ul' element, looks for a sibling linkgets all its direct child menu item links,
+   * and focuses on the last one.
+   */
   handleDownArrow(target) {
-    const currentIndex = this.menuitemNodes.indexOf(target)
-    const nextItem = this.getNextItem(this.menuitemNodes, currentIndex)
-    if (nextItem) {
-      nextItem.focus()
+    // Find parent ul element to determine menu depth
+    const parentMenu = target.closest('ul[data-depth]')
+    let menuDepth = parentMenu ? parseInt(parentMenu.getAttribute('data-depth')) : 0
+
+    // If it's a mega menu, find the related controller and use its data depth instead
+    const megaMenu = target.closest(`.${this.config.megaMenuClass}`)
+    if (megaMenu) {
+      const megaMenuDepth = megaMenu.getAttribute('data-depth')
+      if (megaMenuDepth) {
+        menuDepth = parseInt(megaMenuDepth)
+      }
+    }
+
+    // If we are at the top level and the target is a link, do nothing.
+    if (menuDepth === 0 && target?.tagName === 'A') return
+
+    const rootMenu = target.closest(
+      `button.${this.config.buttonClass}[aria-expanded="true"] + ul, button.${this.config.buttonClass}[aria-expanded="true"] + .menu`
+    )
+
+    // Focusable elements are links or buttons that are visible.
+    const focusableElements = this.getFocusableElements(rootMenu)
+
+    if (
+      focusableElements.length > 0 &&
+      focusableElements.indexOf(target) >= 0
+    ) {
+      const index = focusableElements.indexOf(target)
+      const next =
+        index + 1 < focusableElements.length
+          ? focusableElements[index + 1]
+          : focusableElements[0]
+
+      next.focus()
     }
   }
 
@@ -624,12 +665,36 @@ class MenuLinks {
   }
 
   closeAllButtons(menuContainer) {
-    // Close all expanded buttons
-    const allButtons = menuContainer.querySelectorAll(`button.${this.config.buttonClass}[aria-expanded="true"]`)
+    if (!menuContainer) return
 
-    allButtons.forEach(button => {
-      if (button !== this.domNode) {
-        button.setAttribute('aria-expanded', 'false')
+    // Check if we're on mobile - if so, don't close buttons
+    const mobileBreakpoint = this.config.mobileBreakpoint
+    const mobileMediaQuery = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`)
+    if (mobileMediaQuery.matches) {
+      return // Don't close buttons on mobile
+    }
+
+    // Build flexible selector for expanded elements using config
+    const expandedElementSelectors = [
+      `button.${this.config.buttonClass}[aria-expanded="true"]`,
+      // Also support buttons without the specific class but with aria-expanded
+      'button[aria-expanded="true"]',
+      // Support span elements that might act as menu triggers
+      `span.${this.config.linkClass}[aria-expanded="true"]`,
+    ]
+
+    // Find all expanded elements within the menu container
+    const allExpandedElements = []
+    expandedElementSelectors.forEach(selector => {
+      const elements = menuContainer.querySelectorAll(selector)
+      allExpandedElements.push(...elements)
+    })
+
+    // Remove duplicates and close all expanded elements
+    const uniqueExpandedElements = [...new Set(allExpandedElements)]
+    uniqueExpandedElements.forEach(element => {
+      if (element !== this.domNode) {
+        element.setAttribute('aria-expanded', 'false')
       }
     })
   }
@@ -644,6 +709,34 @@ class MenuLinks {
 
   isLastItem(menuItems, targetIndex) {
     return targetIndex === menuItems.length - 1
+  }
+
+  /**
+   * Gets focusable elements within a menu.
+   *
+   * @param {HTMLElement} menu - The menu ul element.
+   * @returns {HTMLElement[]} - An array of focusable elements within the menu.
+   */
+  getFocusableElements(menu) {
+    if (!menu) return []
+
+    return Array.from(
+      menu.querySelectorAll(`.${this.config.linkClass}:is(a[href], button)`)
+    ).filter((element) => {
+      // Use checkVisibility if available, otherwise fallback to basic visibility check
+      if (typeof element.checkVisibility === 'function') {
+        return element.checkVisibility({
+          opacityProperty: true,
+          visibilityProperty: true,
+        })
+      }
+
+      // Fallback for browsers that don't support checkVisibility
+      const styles = window.getComputedStyle(element)
+      return styles.display !== 'none' &&
+             styles.visibility !== 'hidden' &&
+             styles.opacity !== '0'
+    })
   }
 }
 
@@ -703,17 +796,15 @@ class MenuButton extends MenuLinks {
       case 'ArrowDown':
         const relatedMenuDown = this.buttonNode.nextElementSibling
         // Second level menu opens with down arrow
-        if (relatedMenuDown) {
-          // Only close other buttons if not on mobile
+        if (relatedMenuDown.dataset.depth == '1') {
           if (!this.mobileMediaQuery.matches) {
             this.closeAll()
           }
-
           this.openPopup()
-          this.focusFirstItem(this.buttonNode)
+          this.focusFirstItem(event.target)
           flag = true
         } else {
-          this.handleDownArrow(this.buttonNode)
+          this.handleDownArrow(event.target)
           flag = true
         }
         break
@@ -755,6 +846,10 @@ class MenuButton extends MenuLinks {
       this.closePopup()
     } else {
       this.openPopup()
+      // Only close other buttons if not on mobile
+      if (!this.mobileMediaQuery.matches) {
+        this.closeAll()
+      }
     }
 
     event.stopPropagation()
@@ -777,34 +872,82 @@ class MenuButton extends MenuLinks {
     }
   }
 
+  /**
+   * Checks if the menu is open.
+   *
+   * @returns {boolean} - Returns true if the menu is open, false otherwise.
+   *
+   * This method checks the 'aria-expanded' attribute of the button node.
+   * If the attribute is 'true', the method returns true, indicating that the menu is open.
+   * If the attribute is not 'true', the method returns false, indicating that the menu is not open.
+   */
   isOpen() {
     return this.buttonNode.getAttribute('aria-expanded') === 'true'
   }
 
+  /**
+   * Opens the popup menu.
+   *
+   * This method sets the 'aria-expanded' attribute of the button node to 'true',
+   * indicating that the associated popup menu is open.
+   */
   openPopup() {
-    this.closeAll()
+    // Only close all other buttons if not on mobile
+    if (!this.mobileMediaQuery.matches) {
+      this.closeAll()
+    }
     this.buttonNode.setAttribute('aria-expanded', 'true')
   }
 
+  /**
+   * Closes the popup menu.
+   *
+   * This method sets the 'aria-expanded' attribute of the button node to 'false',
+   * indicating that the associated popup menu is closed.
+   */
   closePopup() {
     this.buttonNode.setAttribute('aria-expanded', 'false')
   }
 
+  /**
+   * Closes all expanded buttons within the menu, with specific behavior based on the menu's depth.
+   * - If the menu is at the top level (depth 0), it closes all top-level buttons except for `this.buttonNode`.
+   * - For menus not at the top level, it ensures that only one button can be open at a time by closing all other buttons except for `this.buttonNode`.
+   * This method is part of the menu management functionality, allowing for better accessibility and user experience by managing the expanded state of menu buttons.
+   */
   closeAll() {
-    // Close all other expanded buttons at the same level
     const menuContainer = this.buttonNode.closest(this.config.menuSelector)
-    const allButtons = menuContainer.querySelectorAll(`button.${this.config.buttonClass}[aria-expanded="true"]`)
 
-    allButtons.forEach(button => {
-      if (button !== this.buttonNode) {
-        button.setAttribute('aria-expanded', 'false')
+    // Find the parent menu of this button to determine depth
+    const parentMenu = this.buttonNode.closest('ul[data-depth]')
+    const currentDepth = parentMenu ? parseInt(parentMenu.getAttribute('data-depth')) : 0
+
+    if (currentDepth === 0) {
+      // Top-level menu: close all top-level buttons except this one
+      const topLevelMenu = menuContainer.querySelector('ul[data-depth="0"]')
+      if (topLevelMenu) {
+        const topLevelButtons = topLevelMenu.querySelectorAll(`button.${this.config.buttonClass}[aria-expanded="true"]`)
+        topLevelButtons.forEach(button => {
+          if (button !== this.buttonNode) {
+            button.setAttribute('aria-expanded', 'false')
+          }
+        })
       }
-    })
+    } else {
+      // Non-top-level menu: close all other buttons in the entire menu except this one
+      const allButtons = menuContainer.querySelectorAll(`button.${this.config.buttonClass}[aria-expanded="true"]`)
+      allButtons.forEach(button => {
+        if (button !== this.buttonNode) {
+          button.setAttribute('aria-expanded', 'false')
+        }
+      })
+    }
   }
 
   onBackgroundMousedown(event) {
     const menuContainer = this.buttonNode.closest(this.config.menuSelector)
 
+    // Only close on background click if not on mobile
     if (
       !menuContainer.contains(event.target) &&
       this.isOpen() &&
