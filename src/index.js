@@ -126,8 +126,16 @@ export class AccessibleMenu {
    * @param {HTMLElement[]} elements - Array of elements to attach controls to
    */
   attachControlsToElements(elements) {
-    elements.forEach(element => {
-      const id = element.getAttribute(this.config.dataPluginIdAttribute)
+    elements.forEach((element, index) => {
+      let id = element.getAttribute(this.config.dataPluginIdAttribute)
+
+      // Generate unique ID if not present for controls
+      if (!id) {
+        const random = Math.floor(Math.random() * 10000)
+        id = `menu-${random}`
+        element.setAttribute(this.config.dataPluginIdAttribute, id)
+      }
+
       const submenu = element.nextElementSibling
 
       if (element.tagName === 'BUTTON') {
