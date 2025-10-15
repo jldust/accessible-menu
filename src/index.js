@@ -525,17 +525,8 @@ class MenuLinks {
       // If parent menu item is in the menubar (data-depth="0")
       if (parentUl && parentUl.dataset.depth === '0') {
         this.navigateToTopLevelItem(parentMenuItem, 'previous', menuContainer)
-        return
-      } else {
-        // Close submenu and focus parent
-        // this.closeSubmenuAndFocusParent(menuController)
-
-        // if (this.menuController?.tagName === 'BUTTON') {
-        //   this.menuController.setAttribute('aria-expanded', 'false')
-        // }
-        // menuController.focus()
-        return
       }
+      return
     }
   }
 
@@ -585,15 +576,16 @@ class MenuLinks {
 
     let targetIndex
     if (direction === 'next') {
+      // Move to next item with circular navigation (wrap to first if at end)
       targetIndex = currentIndex + 1 < topLevelItems.length ? currentIndex + 1 : 0
     } else {
+      // Move to previous item with circular navigation (wrap to last if at beginning)
       targetIndex = currentIndex - 1 >= 0 ? currentIndex - 1 : topLevelItems.length - 1
     }
 
     const targetMenuItem = topLevelItems[targetIndex]
     let targetMenuLink = targetMenuItem.querySelector(`.${this.config.linkClass}`)
 
-    // Close open buttons if not on mobile
     this.closeAllButtons(menuContainer)
 
     // Focus on the target menu item
@@ -661,11 +653,11 @@ class MenuLinks {
   closeAllButtons(menuContainer) {
     if (!menuContainer) return
 
-    // Check if we're on mobile - if so, don't close buttons
+    // If on mobile, don't close buttons
     const mobileBreakpoint = this.config.mobileBreakpoint
     const mobileMediaQuery = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`)
     if (mobileMediaQuery.matches) {
-      return // Don't close buttons on mobile
+      return
     }
 
     // Build flexible selector for expanded elements using config
@@ -751,14 +743,16 @@ class MenuButton extends MenuLinks {
     // Set initial state
     this.buttonNode.setAttribute('aria-expanded', 'false')
 
-    // Add event listeners
-    this.buttonNode.addEventListener('keydown', this.onButtonKeydown.bind(this))
-    this.buttonNode.addEventListener('click', this.onButtonClick.bind(this))
+    // Check if listeners are already attached to prevent duplicates
+    if (!this.buttonNode.hasAttribute('data-menu')) {
+      // Remove any existing listeners first
+      this.buttonNode.removeEventListener('keydown', this.onButtonKeydown.bind(this))
+      this.buttonNode.removeEventListener('click', this.onButtonClick.bind(this))
 
-    if (this.menuNode) {
-      this.menuitemNodes.forEach(item => {
-        item.addEventListener('keydown', this.onMenuitemKeydown.bind(this))
-      })
+      // Attach event listeners to the main menu button
+      this.buttonNode.addEventListener('keydown', this.onButtonKeydown.bind(this))
+      this.buttonNode.addEventListener('click', this.onButtonClick.bind(this))
+      this.buttonNode.setAttribute('data-menu', 'true')
     }
 
     // Add background click listener
@@ -849,6 +843,7 @@ class MenuButton extends MenuLinks {
     if (nestedList) {
       const firstItem = nestedList.querySelector(`.${this.config.linkClass}`)
       if (firstItem) {
+        // If the first item is not a button, it is a default menu so move to the first menu item within.
         if (firstItem.tagName !== 'BUTTON' && firstItem.tagName !== 'A') {
           this.focusFirstItem(firstItem)
         } else {
