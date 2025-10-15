@@ -140,7 +140,7 @@ export class AccessibleMenu {
 
       const submenu = element.nextElementSibling
 
-      if (element.tagName === 'BUTTON') {
+      if (element.tagName === 'BUTTON' || element.tagName === 'SPAN') {
         element.setAttribute('aria-haspopup', 'true')
         if (submenu) {
           const submenuId = `panel-${id}`
@@ -452,21 +452,15 @@ class MenuLinks {
     if (menuDepth === 0 && target?.tagName === 'A') return
 
     const rootMenu = target.closest(
-      `button.${this.config.buttonClass}[aria-expanded="true"] + ul, button.${this.config.buttonClass}[aria-expanded="true"] + .menu`
+      `button.${this.config.buttonClass}[aria-expanded="true"] + ul, button.${this.config.buttonClass}[aria-expanded="true"] + .menu`,
     )
 
     // Focusable elements are links or buttons that are visible.
     const focusableElements = this.getFocusableElements(rootMenu)
 
-    if (
-      focusableElements.length > 0 &&
-      focusableElements.indexOf(target) >= 0
-    ) {
+    if (focusableElements.length > 0 && focusableElements.indexOf(target) >= 0) {
       const index = focusableElements.indexOf(target)
-      const next =
-        index + 1 < focusableElements.length
-          ? focusableElements[index + 1]
-          : focusableElements[0]
+      const next = index + 1 < focusableElements.length ? focusableElements[index + 1] : focusableElements[0]
 
       next.focus()
     }
@@ -720,9 +714,7 @@ class MenuLinks {
   getFocusableElements(menu) {
     if (!menu) return []
 
-    return Array.from(
-      menu.querySelectorAll(`.${this.config.linkClass}:is(a[href], button)`)
-    ).filter((element) => {
+    return Array.from(menu.querySelectorAll(`.${this.config.linkClass}:is(a[href], button)`)).filter(element => {
       // Use checkVisibility if available, otherwise fallback to basic visibility check
       if (typeof element.checkVisibility === 'function') {
         return element.checkVisibility({
@@ -730,12 +722,6 @@ class MenuLinks {
           visibilityProperty: true,
         })
       }
-
-      // Fallback for browsers that don't support checkVisibility
-      const styles = window.getComputedStyle(element)
-      return styles.display !== 'none' &&
-             styles.visibility !== 'hidden' &&
-             styles.opacity !== '0'
     })
   }
 }
@@ -937,7 +923,9 @@ class MenuButton extends MenuLinks {
       // Nested menu: close only sibling buttons at the same level, preserve parent hierarchy
       if (parentMenu) {
         // Find sibling buttons in the same parent menu
-        const siblingButtons = parentMenu.querySelectorAll(`:scope > .${this.config.itemClass} > button.${this.config.buttonClass}[aria-expanded="true"]`)
+        const siblingButtons = parentMenu.querySelectorAll(
+          `:scope > .${this.config.itemClass} > button.${this.config.buttonClass}[aria-expanded="true"]`,
+        )
         siblingButtons.forEach(button => {
           if (button !== this.buttonNode) {
             button.setAttribute('aria-expanded', 'false')
@@ -945,31 +933,17 @@ class MenuButton extends MenuLinks {
         })
 
         // Also close any deeper level menus that are not in our hierarchy
-        const allDeeperButtons = menuContainer.querySelectorAll(`ul[data-depth="${currentDepth + 1}"] button.${this.config.buttonClass}[aria-expanded="true"], ul[data-depth="${currentDepth + 2}"] button.${this.config.buttonClass}[aria-expanded="true"], ul[data-depth="${currentDepth + 3}"] button.${this.config.buttonClass}[aria-expanded="true"]`)
+        const allDeeperButtons = menuContainer.querySelectorAll(
+          `ul[data-depth]:not([data-depth="${currentDepth}"]) button.${this.config.buttonClass}[aria-expanded="true"]`,
+        )
         allDeeperButtons.forEach(button => {
           // Only close if it's not in our submenu hierarchy
-          if (!this.isInSubmenuHierarchy(button)) {
+          if (!this.menuNode) {
             button.setAttribute('aria-expanded', 'false')
           }
         })
       }
     }
-  }
-
-  /**
-   * Checks if a button is within the submenu hierarchy of this button
-   * @param {HTMLElement} button - The button to check
-   * @returns {boolean} - True if the button is in our submenu hierarchy
-   */
-  isInSubmenuHierarchy(button) {
-    // Get the submenu controlled by this button
-    const thisSubmenu = this.menuNode
-    if (!thisSubmenu) {
-      return false
-    }
-
-    // Check if the button is contained within our submenu
-    return thisSubmenu.contains(button)
   }
 
   onBackgroundMousedown(event) {
