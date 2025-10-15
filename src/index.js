@@ -701,7 +701,14 @@ class MenuButton extends MenuLinks {
 
       case 'Down':
       case 'ArrowDown':
-        if (this.buttonNode.nextElementSibling?.dataset.depth === '1') {
+        const relatedMenuDown = this.buttonNode.nextElementSibling
+        // Second level menu opens with down arrow
+        if (relatedMenuDown) {
+          // Only close other buttons if not on mobile
+          if (!this.mobileMediaQuery.matches) {
+            this.closeAll()
+          }
+
           this.openPopup()
           this.focusFirstItem(this.buttonNode)
           flag = true
@@ -713,29 +720,18 @@ class MenuButton extends MenuLinks {
 
       case 'Left':
       case 'ArrowLeft':
-        if (this.buttonNode.nextElementSibling?.dataset.depth === '1') {
-          // Top-level button with submenu - navigate to previous top-level item
-          const menuContainer = this.buttonNode.closest(this.config.menuSelector)
-          const currentMenuItem = this.buttonNode.closest(`.${this.config.itemClass}`)
-          this.navigateToTopLevelItem(currentMenuItem, 'previous', menuContainer)
-        } else {
-          // Close popup and stay on button for nested menus
-          this.closePopup()
-          this.buttonNode.focus()
-        }
+        this.handleLeftArrow()
         break
 
       case 'Right':
       case 'ArrowRight':
-        if (this.buttonNode.nextElementSibling?.dataset.depth === '1') {
-          // Top-level button with submenu - navigate to next top-level item
-          const menuContainer = this.buttonNode.closest(this.config.menuSelector)
-          const currentMenuItem = this.buttonNode.closest(`.${this.config.itemClass}`)
-          this.navigateToTopLevelItem(currentMenuItem, 'next', menuContainer)
-        } else {
-          // Open popup for nested menus
+        const relatedMenu = this.buttonNode.nextElementSibling
+        // Deeply nested menus open with right arrow
+        if (relatedMenu && relatedMenu.dataset.depth !== '1') {
           this.openPopup()
           this.focusFirstItem(this.buttonNode)
+        } else {
+          this.handleRightArrow()
         }
         break
 
