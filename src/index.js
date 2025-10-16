@@ -345,6 +345,14 @@ class MenuLinks {
   }
 
   /**
+   * Create a mobile media query based on the mobile breakpoint from config
+   * @returns {MediaQueryList} The mobile media query object
+   */
+  createMobileMediaQuery() {
+    return window.matchMedia(`(max-width: ${this.config.mobileBreakpoint}px)`)
+  }
+
+  /**
    * Handles keydown events on menu link items.
    *
    * @param {KeyboardEvent} event - The keydown event.
@@ -535,8 +543,7 @@ class MenuLinks {
     }
 
     // Create mobile media query
-    const mobileBreakpoint = this.config.mobileBreakpoint
-    const mobileMediaQuery = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`)
+    const mobileMediaQuery = this.createMobileMediaQuery()
 
     // If within a nested menu and tabbing only
     if (menuNode && !event.shiftKey) {
@@ -789,8 +796,7 @@ class MenuLinks {
     let siblingToFocus = direction === 'right' ? rightSibling : leftSibling
 
     // For top-level menu items, close any open submenus when navigating away
-    const mobileBreakpoint = this.config.mobileBreakpoint
-    const mobileMediaQuery = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`)
+    const mobileMediaQuery = this.createMobileMediaQuery()
 
     if (parentMenu.dataset.depth === '0' && !mobileMediaQuery.matches) {
       this.closeAllButtons(menuContainer)
@@ -814,8 +820,7 @@ class MenuLinks {
     if (!menuContainer) return
 
     // If on mobile, don't close buttons
-    const mobileBreakpoint = this.config.mobileBreakpoint
-    const mobileMediaQuery = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`)
+    const mobileMediaQuery = this.createMobileMediaQuery()
     if (mobileMediaQuery.matches) {
       return
     }
