@@ -710,31 +710,47 @@ class MenuLinks {
    * For top-level menu items, this also closes any open submenus when navigating away.
    */
   handleNonNestedMenu(direction) {
+    // Get menu container
+    const menuContainer = this.domNode.closest(this.config.menuSelector)
+
     // Find parent ul element
     const parentMenu = this.domNode.closest('ul')
     const menuItems = Array.from(parentMenu.children)
 
-    // Find the index of the current menu item
-    const currentMenuItem = this.domNode.closest(`.${this.config.itemClass}`)
-    let targetIndex = menuItems.indexOf(currentMenuItem)
+    let targetIndex = 0
 
-    // Get the appropriate sibling
-    let siblingToFocus
-    if (direction === 'right') {
-      siblingToFocus = this.getNextItem(menuItems, targetIndex)
+    // Mega menu items should count in the same menu as their related ul
+    const megaMenu = this.domNode.closest(`.${this.config.megaMenuClass}`)
+
+    // If mega menu find controller data-menu-controls and set that as targetIndex
+    if (megaMenu) {
+      const menuController = menuContainer.querySelector(`[data-menu-controls="${megaMenu.getAttribute('id')}"]`)
+
+      if (menuController) {
+        targetIndex = menuItems.indexOf(menuController.closest(`.${this.config.itemClass}`))
+      }
     } else {
-      siblingToFocus = this.getPreviousItem(menuItems, targetIndex)
+      // Find the index of the target in menuItems
+      targetIndex = menuItems.indexOf(this.domNode.closest(`.${this.config.itemClass}`))
     }
 
+    const leftSibling = this.getPreviousItem(menuItems, targetIndex)
+    const rightSibling = this.getNextItem(menuItems, targetIndex)
+
+    // Determine which sibling to focus based on direction
+    let siblingToFocus = direction === 'right' ? rightSibling : leftSibling
+
     // For top-level menu items, close any open submenus when navigating away
-    if (parentMenu.dataset.depth === '0') {
-      const menuContainer = this.domNode.closest(this.config.menuSelector)
+    const mobileBreakpoint = this.config.mobileBreakpoint
+    const mobileMediaQuery = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`)
+
+    if (parentMenu.dataset.depth === '0' && !mobileMediaQuery.matches) {
       this.closeAllButtons(menuContainer)
     }
 
-    // Focus on the link within the target menu item
-    const linkToFocus = siblingToFocus.querySelector(`.${this.config.linkClass}`)
-    linkToFocus.focus()
+    // Select actual focus element
+    siblingToFocus = siblingToFocus.querySelector(`.${this.config.linkClass}`)
+    siblingToFocus.focus()
   }
 
   /**
@@ -1007,7 +1023,7 @@ class MenuButton extends MenuLinks {
         // This ensures the element can receive focus while animating
         setTimeout(() => {
           firstItem.focus()
-        }, 10)
+        }, 30)
       }
     }
   }
