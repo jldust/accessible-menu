@@ -25,8 +25,8 @@ describe('AccessibleMenu', () => {
 
     // Create a comprehensive test menu structure
     document.body.innerHTML = `
-      <button id="nav-trigger" aria-expanded="false">Mobile Menu</button>
-      <nav class="c-menu" data-mobile="#nav-trigger" data-breakpoint="768">
+      <button id="nav-toggle" aria-expanded="false">Mobile Menu</button>
+      <nav class="c-menu" data-breakpoint="768">
         <ul class="menu">
           <li class="menu__item">
             <a class="menu__link" href="#" data-plugin-id="link1">Simple Link</a>
@@ -76,7 +76,7 @@ describe('AccessibleMenu', () => {
       expect(menu.config.linkClass).toBe('menu__link')
       expect(menu.config.itemClass).toBe('menu__item')
       expect(menu.config.mobileBreakpoint).toBe(768)
-      expect(menu.config.mobileControlId).toBe(null)
+      expect(menu.config.mobileControlId).toBe('nav-toggle')
     })
 
     it('should merge custom config with defaults', () => {
@@ -178,7 +178,7 @@ describe('AccessibleMenu', () => {
       const menu = new AccessibleMenu()
       menu.init()
 
-      const mobileButton = document.getElementById('nav-trigger')
+      const mobileButton = document.getElementById('nav-toggle')
       expect(mobileButton).toBeTruthy()
       expect(mobileButton.getAttribute('aria-expanded')).toBe('false')
     })
@@ -301,9 +301,9 @@ describe('AccessibleMenu', () => {
     let menu, mobileButton
 
     beforeEach(() => {
-      menu = new AccessibleMenu({ mobileControlId: 'nav-trigger' })
+      menu = new AccessibleMenu({ mobileControlId: 'nav-toggle', mobileBreakpoint: 768 })
       menu.init()
-      mobileButton = document.getElementById('nav-trigger')
+      mobileButton = document.getElementById('nav-toggle')
     })
 
     it('should open mobile menu on button click', () => {
