@@ -526,7 +526,55 @@ class MenuLinks {
    * - If the above conditions are met, the method simulates a click on the menu controller button (if it is indeed a button), which is expected to toggle the visibility of the menu, typically closing it.
    */
   handleTab(event) {
-    // TODO
+    const menuContainer = this.domNode.closest(this.config.menuSelector)
+
+    // Find the parent menuNode with dataset.depth === '1' for nested menus
+    let menuNode = this.domNode.closest('ul')
+    while (menuNode && menuNode.dataset.depth !== '1') {
+      menuNode = menuNode.parentElement?.closest('ul')
+    }
+
+    // Create mobile media query
+    const mobileBreakpoint = this.config.mobileBreakpoint
+    const mobileMediaQuery = window.matchMedia(`(max-width: ${mobileBreakpoint}px)`)
+
+    // If within a nested menu and tabbing only
+    if (menuNode && !event.shiftKey) {
+      // Directly select direct menu item children
+      const menuLinkNodes = menuNode.querySelectorAll(`:scope > .${this.config.itemClass}`)
+      const allMenuLinks = menuNode.querySelectorAll(`.${this.config.itemClass}`)
+
+      const lastItem = menuLinkNodes[menuLinkNodes.length - 1]
+      const lastNestedItem = allMenuLinks[allMenuLinks.length - 1]
+
+      // Check if the last item is the target's parent and close the menu if true
+      if (
+        (lastItem === this.domNode.closest(`.${this.config.itemClass}`) ||
+          lastNestedItem === this.domNode.closest(`.${this.config.itemClass}`)) &&
+        !mobileMediaQuery.matches
+      ) {
+        this.closeAllButtons(menuContainer)
+      }
+    }
+
+    // If user shift+tabs into first item, close menu
+    if (event.shiftKey) {
+      const currentMenuNode = this.domNode.closest('ul')
+
+      if (currentMenuNode && currentMenuNode.dataset.depth > 0) {
+        const menuController = menuContainer.querySelector(
+          `[data-menu-controls="${currentMenuNode.getAttribute('id')}"]`,
+        )
+
+        // Get direct children of the current menu
+        const menuChildren = Array.from(currentMenuNode.querySelectorAll(`:scope > .${this.config.itemClass}`))
+        const firstItem = menuChildren[0] === this.domNode.closest(`.${this.config.itemClass}`)
+
+        if (firstItem && menuController?.tagName === 'BUTTON') {
+          menuController.click()
+        }
+      }
+    }
   }
 
   /**
@@ -594,7 +642,7 @@ class MenuLinks {
     const menuContainer = this.domNode.closest(this.config.menuSelector)
 
     // Find the top-level controller item for this nested menu
-    const controllerItem = this.findControllerItem(menuContainer)
+    const controllerItem = this.findControllerItem()
 
     if (controllerItem) {
       this.navigateToTopLevelItem(controllerItem, 'next', menuContainer)
@@ -617,7 +665,7 @@ class MenuLinks {
    * @param {HTMLElement} menuNode - The current menu node
    * @returns {HTMLElement|null} - The top-level controller item or null
    */
-  findControllerItem(menuContainer) {
+  findControllerItem() {
     // Traverse up from current element to find top-level menu item
     let currentElement = this.domNode
 
