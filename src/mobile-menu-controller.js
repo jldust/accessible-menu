@@ -14,9 +14,9 @@ export class MobileMenuController {
   constructor(menuContainer, config) {
     this.menuContainer = menuContainer
     this.config = config
-    this.mobileNavButton = null
-    this.mobileBreakpoint = null
-    this.mobileMediaQuery = null
+    this.mobileControlId = config.mobileControlId || null
+    this.mobileBreakpoint = config.mobileBreakpoint || null
+    this.mobileMediaQuery = config.mobileMediaQuery || null
 
     // Bind methods to maintain context
     this.handleEscape = this.handleEscape.bind(this)
@@ -35,17 +35,13 @@ export class MobileMenuController {
       return
     }
 
-    const mobileNavButtonId = this.menuContainer.getAttribute(this.config.dataMobileAttribute)?.replace('#', '')
-
-    if (!mobileNavButtonId) {
-      console.warn('Mobile menu controller: No data-mobile attribute found on menu container')
-      return
-    }
-
-    this.mobileNavButton = document.getElementById(mobileNavButtonId)
+    // Attach class for styles
+    this.mobileNavButton = document.getElementById(this.mobileControlId)
+    this.mobileNavButton?.classList.add('js-mobile-toggle')
+    this.menuContainer.classList.add('c-menu-mobile')
 
     if (!this.mobileNavButton) {
-      console.warn(`Mobile menu button with ID "${mobileNavButtonId}" not found`)
+      console.warn(`Mobile menu button with ID "${this.mobileControlId}" not found`)
       return
     }
 
@@ -172,13 +168,5 @@ export class MobileMenuController {
    */
   isOpen() {
     return this.mobileNavButton && this.mobileNavButton.getAttribute('aria-expanded') === 'true'
-  }
-
-  /**
-   * Get the mobile breakpoint for this menu instance
-   * @returns {string|number} - The mobile breakpoint value
-   */
-  getMobileBreakpoint() {
-    return this.mobileBreakpoint
   }
 }

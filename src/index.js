@@ -30,9 +30,8 @@ const DEFAULT_CONFIG = {
   controllerTags: ['button', 'span'],
   controllerClass: 'controller',
   mobileBreakpoint: 768,
-  mobileControlId: null,
-  dataBreakpointAttribute: 'data-breakpoint',
-  dataMobileAttribute: 'data-mobile',
+  mobileControlId: 'nav-toggle',
+  hasMobile: true,
   dataPluginIdAttribute: 'data-plugin-id',
 }
 
@@ -54,9 +53,7 @@ export class AccessibleMenu {
    * @param {string} config.controllerClass - CSS class added to controller elements
    * @param {number} config.mobileBreakpoint - Mobile breakpoint in pixels
    * @param {string} config.mobileControlId - ID of the mobile menu control button
-   * @param {string} config.dataBreakpointAttribute - Data attribute for custom breakpoint
-   * @param {string} config.dataMobileAttribute - Data attribute for mobile control reference
-   * @param {string} config.dataPluginIdAttribute - Data attribute for plugin ID
+   * @param {boolean} config.hasMobile - Boolean for if mobile menus should be initialized
    */
   constructor(config = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config }
@@ -71,8 +68,8 @@ export class AccessibleMenu {
     this.attachAriaControls(context)
     this.attachMenuControls(context)
 
-    // Only attach mobile controls if mobileControlId is configured
-    if (this.config.mobileControlId) {
+    // Only attach mobile controls if hasMobile is true
+    if (this.config.hasMobile) {
       await this.attachMobileControls(context)
     }
   }
@@ -197,17 +194,17 @@ export class AccessibleMenu {
    * @param {HTMLElement|Document} context - The context to search for menus
    */
   async attachMobileControls(context) {
-    const { menuSelector, dataMobileAttribute, mobileControlId } = this.config
+    const { menuSelector, hasMobile, mobileControlId } = this.config
 
     // If no menus and no control ID, nothing to do
     if (!mobileControlId) return
 
     // Find menus with an existing data-mobile attribute
-    const hasMobile = once('mobileMenuControls', `${menuSelector}[${dataMobileAttribute}]`, context)
+    const menus = once('mobileMenuControls', `${menuSelector}`, context)
 
     // If we already have menus with data-mobile, use them
-    if (hasMobile.length > 0) {
-      return this.initializeMobileMenus(hasMobile)
+    if (hasMobile) {
+      return this.initializeMobileMenus(menus)
     }
   }
 
@@ -251,21 +248,11 @@ class MenuController {
   constructor(menuContainer, config) {
     this.menuContainer = menuContainer
     this.config = config
-    this.mobileBreakpoint = this.getMobileBreakpoint()
+    this.mobileBreakpoint = this.config.mobileBreakpoint
     this.mobileMediaQuery = window.matchMedia(`(max-width: ${this.mobileBreakpoint}px)`)
+    this.menuContainer.setAttribute('data-breakpoint', this.mobileBreakpoint)
 
     this.initializeMenus()
-  }
-
-  /**
-   * Get the mobile breakpoint for this menu instance
-   * @returns {number} The mobile breakpoint in pixels
-   */
-  getMobileBreakpoint() {
-    if (this.menuContainer.hasAttribute(this.config.dataBreakpointAttribute)) {
-      return parseInt(this.menuContainer.getAttribute(this.config.dataBreakpointAttribute).replace('#', ''))
-    }
-    return this.config.mobileBreakpoint
   }
 
   /**
