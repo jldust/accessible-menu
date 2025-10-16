@@ -7,8 +7,8 @@
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/**/*",
-    "src/menu-styles.css",
+    "dist/",
+    "src/",
     "README.md",
     "LICENSE"
   ],
@@ -34,9 +34,16 @@
     "url": "https://github.com/jldust/accessible-menu.git",
     "directory": "packages/accessible-menu"
   },
+  "bugs": {
+    "url": "https://github.com/jldust/accessible-menu/issues"
+  },
   "devDependencies": {
+    "@babel/core": "^7.28.3",
     "@babel/preset-env": "^7.28.3",
     "@jest/environment": "^30.0.5",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "concurrently": "^8.2.2",
     "jest": "^30.0.5",

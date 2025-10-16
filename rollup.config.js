@@ -1,4 +1,7 @@
-import { nodeResolve } from '@rollup/plugin-node-resolve';
+import { defineConfig } from 'rollup'
+import { babel } from '@rollup/plugin-babel'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs'
 
 export default [
   // ES Module build
@@ -8,11 +11,26 @@ export default [
       file: 'dist/index.esm.js',
       format: 'es',
       sourcemap: true,
-      inlineDynamicImports: true
+      inlineDynamicImports: true,
     },
     plugins: [
-      nodeResolve()
-    ]
+      nodeResolve(),
+      commonjs(),
+      babel({
+        babelHelpers: 'bundled',
+        exclude: 'node_modules/**',
+        presets: [
+          [
+            '@babel/preset-env',
+            {
+              targets: {
+                browsers: ['> 1%', 'last 2 versions', 'not ie <= 8'],
+              },
+            },
+          ],
+        ],
+      }),
+    ],
   },
   // CommonJS build
   {
@@ -22,11 +40,26 @@ export default [
       format: 'cjs',
       sourcemap: true,
       exports: 'named',
-      inlineDynamicImports: true
+      inlineDynamicImports: true,
     },
     plugins: [
-      nodeResolve()
-    ]
+      nodeResolve(),
+      commonjs(),
+      babel({
+        babelHelpers: 'bundled',
+        exclude: 'node_modules/**',
+        presets: [
+          [
+            '@babel/preset-env',
+            {
+              targets: {
+                browsers: ['> 1%', 'last 2 versions', 'not ie <= 8'],
+              },
+            },
+          ],
+        ],
+      }),
+    ],
   },
   // UMD build for browsers
   {
@@ -37,10 +70,25 @@ export default [
       name: 'AccessibleMenu',
       sourcemap: true,
       inlineDynamicImports: true,
-      exports: 'named'
+      exports: 'named',
     },
     plugins: [
-      nodeResolve()
-    ]
-  }
-];
+      nodeResolve(),
+      commonjs(),
+      babel({
+        babelHelpers: 'bundled',
+        exclude: 'node_modules/**',
+        presets: [
+          [
+            '@babel/preset-env',
+            {
+              targets: {
+                browsers: ['> 1%', 'last 2 versions', 'not ie <= 8'],
+              },
+            },
+          ],
+        ],
+      }),
+    ],
+  },
+]
