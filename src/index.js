@@ -51,6 +51,7 @@ export class AccessibleMenu {
    * @param {string} config.itemClass - CSS class for menu items
    * @param {string} config.megaMenuClass - CSS class for mega menu wrapper
    * @param {string[]} config.controllerTags - Array of HTML tag names that can act as menu controllers
+   * @param {string} config.controllerClass - CSS class added to controller elements
    * @param {number} config.mobileBreakpoint - Mobile breakpoint in pixels
    * @param {string} config.mobileControlId - ID of the mobile menu control button
    * @param {string} config.dataBreakpointAttribute - Data attribute for custom breakpoint
@@ -139,7 +140,7 @@ export class AccessibleMenu {
    * @param {HTMLElement[]} elements - Array of elements to attach controls to
    */
   attachControlsToElements(elements) {
-    elements.forEach((element, index) => {
+    elements.forEach(element => {
       let id = element.getAttribute(this.config.dataPluginIdAttribute)
 
       // Generate unique ID if not present for controls
@@ -223,8 +224,14 @@ export class AccessibleMenu {
 
 /**
  * Menu Controller for keyboard navigation
+ * Manages menu initialization and coordinates MenuButton and MenuLinks instances
  */
 class MenuController {
+  /**
+   * Create a MenuController instance
+   * @param {HTMLElement} menuContainer - The menu container element
+   * @param {Object} config - Configuration options
+   */
   constructor(menuContainer, config) {
     this.menuContainer = menuContainer
     this.config = config
@@ -234,6 +241,10 @@ class MenuController {
     this.initializeMenus()
   }
 
+  /**
+   * Get the mobile breakpoint for this menu instance
+   * @returns {number} The mobile breakpoint in pixels
+   */
   getMobileBreakpoint() {
     if (this.menuContainer.hasAttribute(this.config.dataBreakpointAttribute)) {
       return parseInt(this.menuContainer.getAttribute(this.config.dataBreakpointAttribute).replace('#', ''))
@@ -241,6 +252,9 @@ class MenuController {
     return this.config.mobileBreakpoint
   }
 
+  /**
+   * Initialize menu buttons and links within the menu container
+   */
   initializeMenus() {
     // Create selector for controller elements
     const controllerSelectors = this.config.controllerTags.map(tag => `${tag}.${this.config.buttonClass}`).join(', ')
@@ -268,12 +282,20 @@ class MenuController {
  * Mobile Menu Controller
  */
 class MobileMenuController {
+  /**
+   * Create a MobileMenuController instance
+   * @param {HTMLElement} menuContainer - The menu container element
+   * @param {Object} config - Configuration options
+   */
   constructor(menuContainer, config) {
     this.menuContainer = menuContainer
     this.config = config
     this.init()
   }
 
+  /**
+   * Initialize the mobile menu controller
+   */
   init() {
     const mobileNavButtonId = this.menuContainer.getAttribute(this.config.dataMobileAttribute).replace('#', '')
 
@@ -293,11 +315,18 @@ class MobileMenuController {
     this.setupEventListeners()
   }
 
+  /**
+   * Set up event listeners for mobile menu functionality
+   */
   setupEventListeners() {
     this.mobileNavButton?.addEventListener('click', this.mobileControl.bind(this))
     window.addEventListener('keydown', this.handleEscape.bind(this))
   }
 
+  /**
+   * Close the mobile menu and clean up
+   * @param {string} [key] - The key that triggered the close (for focus management)
+   */
   closeMobile(key) {
     document.body.classList.remove('js-prevent-scroll')
     this.mobileNavButton.setAttribute('aria-expanded', 'false')
@@ -311,6 +340,10 @@ class MobileMenuController {
     window.removeEventListener('click', this.onWindowClick.bind(this))
   }
 
+  /**
+   * Handle mobile menu toggle button clicks
+   * @param {Event} event - The click event
+   */
   mobileControl(event) {
     const isMenuClosed = this.mobileNavButton.getAttribute('aria-expanded') === 'false'
 
@@ -324,6 +357,10 @@ class MobileMenuController {
     }
   }
 
+  /**
+   * Handle escape key presses to close mobile menu
+   * @param {KeyboardEvent} e - The keyboard event
+   */
   handleEscape(e) {
     if (
       this.mobileNavButton &&
@@ -334,6 +371,10 @@ class MobileMenuController {
     }
   }
 
+  /**
+   * Handle clicks outside the menu to close mobile menu
+   * @param {Event} event - The click event
+   */
   onWindowClick(event) {
     if (this.mobileMediaQuery.matches && !this.menuContainer.contains(event.target)) {
       this.closeMobile()
@@ -342,9 +383,18 @@ class MobileMenuController {
 }
 
 /**
- * MenuLinks class for basic menu link functionality
+ * MenuLinks class handles keyboard navigation and interaction for menu link elements.
+ * Provides arrow key navigation, focus management, and submenu controls for accessible menu systems.
+ * Supports both nested and non-nested menu structures with circular navigation patterns.
+ *
+ * @class MenuLinks
  */
 class MenuLinks {
+  /**
+   * Create a MenuLinks instance
+   * @param {HTMLElement} domNode - The menu link or item element
+   * @param {Object} config - Configuration options
+   */
   constructor(domNode, config) {
     this.domNode = domNode
     this.config = config
@@ -444,10 +494,8 @@ class MenuLinks {
    *
    * @param {HTMLElement} target - The current active menu item.
    *
-   * This method finds the previous sibling menu item of the current active menu item.
-   * If such a sibling menu item exists and it contains a link, it focuses on that link.
-   * Otherwise, it finds the closest parent 'ul' element, gets all its direct child menu item links,
-   * and focuses on the last one.
+   * This method finds the previous menu item in the menuitemNodes array and focuses on it.
+   * Uses circular navigation to wrap to the last item if currently on the first item.
    */
   handleUpArrow(target) {
     const currentIndex = this.menuitemNodes.indexOf(target)
@@ -861,9 +909,15 @@ class MenuLinks {
 }
 
 /**
- * MenuButton class for menu controllers (buttons,spans) with submenu functionality
+ * Extends MenuLinks to add menu button-specific behavior like opening/closing submenus
  */
 class MenuButton extends MenuLinks {
+  /**
+   * Create a MenuButton instance
+   * @param {HTMLElement} buttonNode - The button or controller element
+   * @param {Object} config - Configuration options
+   * @param {MediaQueryList} mobileMediaQuery - The mobile media query object
+   */
   constructor(buttonNode, config, mobileMediaQuery) {
     const menuContainer = buttonNode.closest(config.menuSelector)
     super(buttonNode, config)
@@ -1052,10 +1106,6 @@ class MenuButton extends MenuLinks {
    * indicating that the associated popup menu is open.
    */
   openPopup() {
-    // Only close all other buttons if not on mobile
-    if (!this.mobileMediaQuery.matches) {
-      this.closeAll()
-    }
     this.buttonNode.setAttribute('aria-expanded', 'true')
   }
 
