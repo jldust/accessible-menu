@@ -1,4 +1,4 @@
-import { AccessibleMenu } from '@jldust/accessible-menu';
+import { AccessibleMenu } from '@jldust/accessible-menu'
 
 // Example 1: Using with custom CSS classes and mobile breakpoint
 const customMenu = new AccessibleMenu({
@@ -7,44 +7,44 @@ const customMenu = new AccessibleMenu({
   linkClass: 'nav-link',
   itemClass: 'nav-item',
   mobileBreakpoint: 1024,
-  mobileControlId: 'hamburger-menu'
-});
+  mobileControlId: 'hamburger-menu',
+})
 
-customMenu.init();
+customMenu.init()
 
 // Example 2: Initialize only a specific menu container
-const specificContainer = document.querySelector('.header-menu');
-customMenu.init(specificContainer);
+const specificContainer = document.querySelector('.header-menu')
+customMenu.init(specificContainer)
 
 // Example 3: Using with different configurations for different menus
 const mainMenu = new AccessibleMenu({
   menuSelector: '.main-menu',
   buttonClass: 'main-menu__button',
   linkClass: 'main-menu__link',
-  mobileBreakpoint: 768
-});
+  mobileBreakpoint: 768,
+})
 
 const footerMenu = new AccessibleMenu({
   menuSelector: '.footer-menu',
   buttonClass: 'footer-menu__button',
   linkClass: 'footer-menu__link',
-  mobileBreakpoint: 480
-});
+  mobileBreakpoint: 480,
+})
 
 // Initialize both menus
-mainMenu.init();
-footerMenu.init();
+mainMenu.init()
+footerMenu.init()
 
 // Example 4: Dynamic menu creation and initialization
 function createDynamicMenu() {
   const menuHTML = `
-    <nav class="dynamic-menu" data-breakpoint="768" data-mobile="#mobile-btn">
+    <nav class="dynamic-menu" data-breakpoint="768">
       <ul class="menu">
         <li class="menu__item">
           <a href="#" class="menu__link">Home</a>
         </li>
         <li class="menu__item menu__item--expanded">
-          <button class="menu__link" data-plugin-id="products">Products</button>
+          <button class="menu__link">Products</button>
           <ul class="menu" data-depth="1">
             <li class="menu__item">
               <a href="#" class="menu__link">Software</a>
@@ -56,26 +56,26 @@ function createDynamicMenu() {
         </li>
       </ul>
     </nav>
-  `;
+  `
 
-  document.body.insertAdjacentHTML('beforeend', menuHTML);
+  document.body.insertAdjacentHTML('beforeend', menuHTML)
 
   const dynamicMenuConfig = new AccessibleMenu({
     menuSelector: '.dynamic-menu',
     buttonClass: 'menu__link',
-    linkClass: 'menu__link'
-  });
+    linkClass: 'menu__link',
+  })
 
-  dynamicMenuConfig.init();
+  dynamicMenuConfig.init()
 }
 
 // Example 5: Cleanup when removing menus
 function removeMenu() {
-  const menuElement = document.querySelector('.dynamic-menu');
+  const menuElement = document.querySelector('.dynamic-menu')
   if (menuElement) {
-    customMenu.destroy(menuElement);
-    menuElement.remove();
+    customMenu.destroy(menuElement)
+    menuElement.remove()
   }
 }
 
-export { customMenu, mainMenu, footerMenu, createDynamicMenu, removeMenu };
+export { customMenu, mainMenu, footerMenu, createDynamicMenu, removeMenu }
