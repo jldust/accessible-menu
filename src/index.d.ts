@@ -21,43 +21,43 @@ export interface MenuConfig {
 
 export declare class AccessibleMenu {
   constructor(config?: MenuConfig);
-  
+
   /**
    * Initialize all menus on the page
    * @param context - The context to search for menus
    */
   init(context?: HTMLElement | Document): void;
-  
+
   /**
    * Attach ARIA controls to menu elements
    * @param context - The context to search for menus
    */
   attachAriaControls(context: HTMLElement | Document): void;
-  
+
   /**
    * Attach controls to given elements
    * @param elements - Array of elements to attach controls to
    */
   attachControlsToElements(elements: HTMLElement[]): void;
-  
+
   /**
    * Attach menu controls for keyboard navigation
    * @param context - The context to search for menus
    */
   attachMenuControls(context: HTMLElement | Document): void;
-  
+
   /**
    * Attach mobile menu controls
    * @param context - The context to search for menus
    */
   attachMobileControls(context: HTMLElement | Document): void;
-  
+
   /**
    * Destroy a menu instance
    * @param menuContainer - The menu container to destroy
    */
   destroy(menuContainer: HTMLElement): void;
-  
+
   /**
    * Destroy all menu instances
    */
