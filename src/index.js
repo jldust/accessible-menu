@@ -30,7 +30,7 @@ const DEFAULT_CONFIG = {
   controllerTags: ['button', 'span'],
   controllerClass: 'controller',
   mobileBreakpoint: 768,
-  mobileControlId: 'nav-trigger',
+  mobileControlId: null,
   dataBreakpointAttribute: 'data-breakpoint',
   dataMobileAttribute: 'data-mobile',
   dataPluginIdAttribute: 'data-plugin-id',
@@ -67,10 +67,14 @@ export class AccessibleMenu {
    * Initialize all menus on the page
    * @param {HTMLElement|Document} context - The context to search for menus
    */
-  init(context = document) {
+  async init(context = document) {
     this.attachAriaControls(context)
     this.attachMenuControls(context)
-    this.attachMobileControls(context)
+
+    // Only attach mobile controls if mobileControlId is configured
+    if (this.config.mobileControlId) {
+      await this.attachMobileControls(context)
+    }
   }
 
   /**
@@ -192,12 +196,24 @@ export class AccessibleMenu {
    * Attach mobile menu controls
    * @param {HTMLElement|Document} context - The context to search for menus
    */
-  attachMobileControls(context) {
-    const menus = once('mobileMenuControls', `${this.config.menuSelector}[${this.config.dataMobileAttribute}]`, context)
+  async attachMobileControls(context) {
+    const { menuSelector, dataMobileAttribute, mobileControlId } = this.config
 
-    menus.forEach(menuContainer => {
-      new MobileMenuController(menuContainer, this.config)
-    })
+    // If no menus and no control ID, nothing to do
+    if (!mobileControlId) return
+
+    // Find menus with an existing data-mobile attribute
+    const hasMobile = once('mobileMenuControls', `${menuSelector}[${dataMobileAttribute}]`, context)
+
+    // If we already have menus with data-mobile, use them
+    if (hasMobile.length > 0) {
+      return this.initializeMobileMenus(hasMobile)
+    }
+  }
+
+  async initializeMobileMenus(menus) {
+    const { MobileMenuController } = await import('./mobile-menu-controller.js')
+    menus.forEach(menu => new MobileMenuController(menu, this.config))
   }
 
   /**
@@ -276,109 +292,12 @@ class MenuController {
         }
       })
   }
-}
-
-/**
- * Mobile Menu Controller
- */
-class MobileMenuController {
-  /**
-   * Create a MobileMenuController instance
-   * @param {HTMLElement} menuContainer - The menu container element
-   * @param {Object} config - Configuration options
-   */
-  constructor(menuContainer, config) {
-    this.menuContainer = menuContainer
-    this.config = config
-    this.init()
-  }
 
   /**
-   * Initialize the mobile menu controller
+   * Destroy the menu controller and clean up
    */
-  init() {
-    const mobileNavButtonId = this.menuContainer.getAttribute(this.config.dataMobileAttribute).replace('#', '')
-
-    this.mobileNavButton = document.getElementById(mobileNavButtonId)
-
-    if (!this.mobileNavButton) {
-      console.warn(`Mobile menu button with ID "${mobileNavButtonId}" not found`)
-      return
-    }
-
-    this.mobileBreakpoint =
-      this.menuContainer.getAttribute(this.config.dataBreakpointAttribute)?.replace('#', '') ||
-      this.config.mobileBreakpoint
-
-    this.mobileMediaQuery = window.matchMedia(`(max-width: ${this.mobileBreakpoint}px)`)
-
-    this.setupEventListeners()
-  }
-
-  /**
-   * Set up event listeners for mobile menu functionality
-   */
-  setupEventListeners() {
-    this.mobileNavButton?.addEventListener('click', this.mobileControl.bind(this))
-    window.addEventListener('keydown', this.handleEscape.bind(this))
-  }
-
-  /**
-   * Close the mobile menu and clean up
-   * @param {string} [key] - The key that triggered the close (for focus management)
-   */
-  closeMobile(key) {
-    document.body.classList.remove('js-prevent-scroll')
-    this.mobileNavButton.setAttribute('aria-expanded', 'false')
-
-    // If escape key, set focus
-    if (key === 'Esc' || key === 'Escape') {
-      this.mobileNavButton.focus()
-    }
-
-    // Remove window listener
-    window.removeEventListener('click', this.onWindowClick.bind(this))
-  }
-
-  /**
-   * Handle mobile menu toggle button clicks
-   * @param {Event} event - The click event
-   */
-  mobileControl(event) {
-    const isMenuClosed = this.mobileNavButton.getAttribute('aria-expanded') === 'false'
-
-    if (isMenuClosed) {
-      document.body.classList.add('js-prevent-scroll')
-      this.mobileNavButton.setAttribute('aria-expanded', 'true')
-      event.stopPropagation()
-      window.addEventListener('click', this.onWindowClick.bind(this))
-    } else {
-      this.closeMobile()
-    }
-  }
-
-  /**
-   * Handle escape key presses to close mobile menu
-   * @param {KeyboardEvent} e - The keyboard event
-   */
-  handleEscape(e) {
-    if (
-      this.mobileNavButton &&
-      this.mobileNavButton.getAttribute('aria-expanded') === 'true' &&
-      (e.key === 'Esc' || e.key === 'Escape')
-    ) {
-      this.closeMobile('Esc')
-    }
-  }
-
-  /**
-   * Handle clicks outside the menu to close mobile menu
-   * @param {Event} event - The click event
-   */
-  onWindowClick(event) {
-    if (this.mobileMediaQuery.matches && !this.menuContainer.contains(event.target)) {
-      this.closeMobile()
-    }
+  destroy() {
+    // @TODO: Clean up any event listeners or resources
   }
 }
 
@@ -657,6 +576,10 @@ class MenuLinks {
       // If parent menu item is in the menubar (data-depth="0")
       if (parentUl && parentUl.dataset.depth === '0') {
         this.navigateToTopLevelItem(parentMenuItem, 'previous', menuContainer)
+      } else {
+        // Focus on the parent menu item and close submenu
+        menuController.setAttribute('aria-expanded', 'false')
+        menuController.focus()
       }
       return
     }
@@ -1075,13 +998,12 @@ class MenuButton extends MenuLinks {
 
     if (nestedList) {
       const firstItem = nestedList.querySelector(`.${this.config.linkClass}`)
-      if (firstItem) {
-        // If the first item is not a controller or link, it is a default menu so move to the first menu item within.
-        if (!this.config.controllerTags.includes(firstItem.tagName.toLowerCase()) && firstItem.tagName !== 'A') {
-          this.focusFirstItem(firstItem)
-        } else {
-          firstItem.focus()
-        }
+
+      // If the first item is not a controller or link, it is a default menu so move to the first menu item within.
+      if (firstItem.tagName !== 'BUTTON' && firstItem.tagName !== 'A') {
+        this.focusFirstItem(firstItem)
+      } else {
+        firstItem.focus()
       }
     }
   }
@@ -1198,3 +1120,9 @@ class MenuButton extends MenuLinks {
 
 // Export default instance for easy usage
 export default AccessibleMenu
+
+// Export MobileMenuController as a dynamic import for tree shaking
+export const MobileMenuController = async () => {
+  const { MobileMenuController } = await import('./mobile-menu-controller.js')
+  return MobileMenuController
+}
