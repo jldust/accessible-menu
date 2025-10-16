@@ -93,7 +93,7 @@ menu.init()
 | `linkClass`        | `string`         | `'menu__link'`  | CSS class for menu links             |
 | `itemClass`        | `string`         | `'menu__item'`  | CSS class for menu items             |
 | `mobileBreakpoint` | `number`         | `768`           | Mobile breakpoint in pixels          |
-| `mobileControlId`  | `string \| null` | `'nav-trigger'` | ID of the mobile menu control button |
+| `mobileControlId`  | `string \| null` | `'nav-toggle'`  | ID of the mobile menu control button |
 
 ## HTML Structure
 
@@ -106,7 +106,7 @@ menu.init()
       <a href="#" class="menu__link">Home</a>
     </li>
     <li class="menu__item menu__item--expanded">
-      <button class="menu__link" data-plugin-id="about">About</button>
+      <button class="menu__link">About</button>
       <ul class="menu" data-depth="1">
         <li class="menu__item">
           <a href="#" class="menu__link">Our Story</a>
@@ -123,13 +123,13 @@ menu.init()
 <button id="mobile-toggle" aria-expanded="false">Menu</button>
 ```
 
-### Mega Menu Structure
+### Mega Menu Structure (Work In Progress)
 
 ```html
 <nav class="c-menu">
   <ul class="menu">
     <li class="menu__item menu__item--expanded">
-      <span class="menu__link" data-plugin-id="services">Services</span>
+      <span class="menu__link">Services</span>
       <div class="c-mega-menu__wrapper">
         <ul class="menu" data-depth="1">
           <li class="menu__item">
