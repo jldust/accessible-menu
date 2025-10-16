@@ -29,14 +29,11 @@
 
 /* Menu .controller styles */
 .c-menu ul[data-depth='0'] li > .controller {
-  font-size: 1.125rem; /* 18px */
-  line-height: 1.4;
   align-items: center;
-  background: white;
   border: none;
   display: flex;
   flex-direction: row;
-  padding: 0.25rem 0; /* 4px 0 */
+  padding: 0.5rem 0;
   cursor: pointer;
   font-family: inherit;
 }
@@ -82,7 +79,6 @@
 .c-menu ul:not([data-depth='0']) a.menu__link:focus,
 .c-menu ul:not([data-depth='0']) a.menu__link:hover {
   cursor: pointer;
-  background-color: #f0f0f0;
 }
 
 .c-menu ul:not([data-depth='0']) a.menu__item:focus-visible,
@@ -147,17 +143,29 @@
 
 /* Mobile menu styles */
 @media (max-width: 768px) {
+  /* Mobile menu container */
+  .c-menu .c-menu-mobile {
+    left: 0;
+    max-height: calc(100vh - 100%);
+    position: absolute;
+    opacity: 0;
+    top: 100%;
+    transform: translate3d(100%, 0, 0);
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    width: 100%;
+  }
+
   /* Hidden mobile menu */
   .c-menu .js-mobile-nav-trigger[aria-expanded='false'] + .c-menu-mobile {
-    opacity: 0;
-    visibility: hidden;
-    transform: translate3d(375px, 0, 0);
+    display: none;
   }
 
   /* Visible mobile menu */
   .c-menu .js-mobile-nav-trigger[aria-expanded='true'] + .c-menu-mobile {
+    animation: slideInFromRight 0.3s ease-in-out forwards;
+    display: block;
+    max-height: calc(100vh - 100px);
     opacity: 1;
-    visibility: visible;
     overflow-y: auto;
     transform: translate3d(0, 0, 0);
     z-index: 3;
@@ -214,9 +222,20 @@
 
 @media (max-width: 768px) {
   .c-menu ul:not([data-depth='0']) {
-    background: transparent;
     border: none;
     box-shadow: none;
     padding: 0;
+  }
+}
+
+/* Mobile menu slide-in animation */
+@keyframes slideInFromRight {
+  0% {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 }

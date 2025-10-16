@@ -1003,7 +1003,11 @@ class MenuButton extends MenuLinks {
       if (firstItem.tagName !== 'BUTTON' && firstItem.tagName !== 'A') {
         this.focusFirstItem(firstItem)
       } else {
-        firstItem.focus()
+        // Delay focus to allow CSS visibility transition to complete
+        // This ensures the element can receive focus while animating
+        setTimeout(() => {
+          firstItem.focus()
+        }, 10)
       }
     }
   }
