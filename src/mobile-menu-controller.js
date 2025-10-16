@@ -14,6 +14,7 @@ export class MobileMenuController {
   constructor(menuContainer, config) {
     this.menuContainer = menuContainer
     this.config = config
+    this.linkClass = config.linkClass
     this.mobileControlId = config.mobileControlId || null
     this.mobileBreakpoint = config.mobileBreakpoint || null
     this.mobileMediaQuery = config.mobileMediaQuery || null
@@ -86,7 +87,7 @@ export class MobileMenuController {
     this.mobileNavButton.setAttribute('aria-expanded', 'false')
 
     // Close all dropdown sub-menus within the menu container
-    const menuButtons = this.menuContainer.querySelectorAll('button.menu__link')
+    const menuButtons = this.menuContainer.querySelectorAll(`button.${this.linkClass}`)
     menuButtons.forEach(button => {
       button.setAttribute('aria-expanded', 'false')
     })
@@ -140,7 +141,7 @@ export class MobileMenuController {
     }
 
     // Find all top-level menu__link buttons inside menuContainer
-    const topLevelMenuLinks = this.menuContainer.querySelectorAll('[data-depth="0"] > li > .menu__link')
+    const topLevelMenuLinks = this.menuContainer.querySelectorAll(`[data-depth="0"] > li > .${this.linkClass}`)
 
     // Check if the current target is part of top-level menu links
     const isTargetTopLevelLink = Array.from(topLevelMenuLinks).includes(e.target)
