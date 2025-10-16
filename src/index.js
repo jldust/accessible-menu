@@ -28,6 +28,8 @@ const DEFAULT_CONFIG = {
   linkClass: 'menu__link',
   itemClass: 'menu__item',
   megaMenuClass: 'c-mega-menu',
+  controllerTags: ['button', 'span'],
+  controllerClass: 'controller',
   mobileBreakpoint: 768,
   mobileControlId: 'nav-trigger',
   dataBreakpointAttribute: 'data-breakpoint',
@@ -49,6 +51,7 @@ export class AccessibleMenu {
    * @param {string} config.linkClass - CSS class for menu links
    * @param {string} config.itemClass - CSS class for menu items
    * @param {string} config.megaMenuClass - CSS class for mega menu wrapper
+   * @param {string[]} config.controllerTags - Array of HTML tag names that can act as menu controllers
    * @param {number} config.mobileBreakpoint - Mobile breakpoint in pixels
    * @param {string} config.mobileControlId - ID of the mobile menu control button
    * @param {string} config.dataBreakpointAttribute - Data attribute for custom breakpoint
@@ -81,14 +84,14 @@ export class AccessibleMenu {
       // Set depth attributes for all menu levels
       this.setMenuDepthAttributes(menu)
 
-      // Find top-level menu buttons
-      const buttons = menu.querySelectorAll(`:scope button.${this.config.buttonClass}`)
+      // Find all controller elements (buttons, spans, etc.)
+      const controllerSelectors = this.config.controllerTags
+        .map(tag => `:scope ${tag}.${this.config.buttonClass}`)
+        .join(', ')
+      const controllers = menu.querySelectorAll(controllerSelectors)
 
-      // Find menu spans for megamenu items
-      const spans = menu.querySelectorAll(`:scope span.${this.config.linkClass}`)
-
-      // Attach controls to buttons and spans
-      this.attachControlsToElements([...buttons, ...spans])
+      // Attach controls to all controller elements
+      this.attachControlsToElements([...controllers])
     })
   }
 
@@ -124,6 +127,15 @@ export class AccessibleMenu {
   }
 
   /**
+   * Check if an element is a valid controller based on config
+   * @param {HTMLElement} element - The element to check
+   * @returns {boolean} - True if element is a valid controller
+   */
+  isController(element) {
+    return this.config.controllerTags.includes(element.tagName.toLowerCase())
+  }
+
+  /**
    * Attach controls to given elements
    * @param {HTMLElement[]} elements - Array of elements to attach controls to
    */
@@ -140,7 +152,7 @@ export class AccessibleMenu {
 
       const submenu = element.nextElementSibling
 
-      if (element.tagName === 'BUTTON' || element.tagName === 'SPAN') {
+      if (this.isController(element)) {
         element.setAttribute('aria-haspopup', 'true')
         if (submenu) {
           const submenuId = `panel-${id}`
@@ -231,9 +243,12 @@ class MenuController {
   }
 
   initializeMenus() {
-    // Initialize MenuButton for each button in the menuContainer
-    this.menuContainer.querySelectorAll(`button.${this.config.buttonClass}`).forEach(button => {
-      new MenuButton(button, this.config, this.mobileMediaQuery)
+    // Create selector for controller elements
+    const controllerSelectors = this.config.controllerTags.map(tag => `${tag}.${this.config.buttonClass}`).join(', ')
+
+    // Initialize MenuButton for each controller in the menuContainer
+    this.menuContainer.querySelectorAll(controllerSelectors).forEach(controller => {
+      new MenuButton(controller, this.config, this.mobileMediaQuery)
     })
 
     // Initialize main menu list
@@ -243,7 +258,7 @@ class MenuController {
       )
       .forEach(item => {
         const link = item.querySelector(`.${this.config.linkClass}`)
-        if (link && link.tagName !== 'BUTTON') {
+        if (link && !this.config.controllerTags.includes(link.tagName.toLowerCase())) {
           new MenuLinks(link, this.config)
         }
       })
@@ -287,12 +302,6 @@ class MobileMenuController {
   closeMobile(key) {
     document.body.classList.remove('js-prevent-scroll')
     this.mobileNavButton.setAttribute('aria-expanded', 'false')
-
-    // Don't close dropdown sub-menus on mobile - buttons should stay open
-    // const menuButtons = this.menuContainer.querySelectorAll(`button.${this.config.buttonClass}`)
-    // menuButtons.forEach(button => {
-    //   button.setAttribute('aria-expanded', 'false')
-    // })
 
     // If escape key, set focus
     if (key === 'Esc' || key === 'Escape') {
@@ -357,7 +366,7 @@ class MenuLinks {
       this.menuitemNodes = [...this.menuitemNodes, ...megaMenuLinks]
     }
 
-    if (domNode && domNode.nodeName === 'BUTTON') {
+    if (domNode && config.controllerTags.includes(domNode.tagName.toLowerCase())) {
       this.menuitemNodes = this.menuitemNodes.filter(item => item !== domNode)
     } else {
       this.domNode.addEventListener('keydown', this.onMenuitemKeydown.bind(this))
@@ -451,9 +460,15 @@ class MenuLinks {
     // If we are at the top level and the target is a link, do nothing.
     if (menuDepth === 0 && target?.tagName === 'A') return
 
-    const rootMenu = target.closest(
-      `button.${this.config.buttonClass}[aria-expanded="true"] + ul, button.${this.config.buttonClass}[aria-expanded="true"] + .menu`,
-    )
+    // Build selector for controller options
+    const controler = this.config.controllerTags
+      .map(
+        tag =>
+          `${tag}.${this.config.buttonClass}[aria-expanded="true"] + ul, ${tag}.${this.config.buttonClass}[aria-expanded="true"] + .menu`,
+      )
+      .join(', ')
+
+    const rootMenu = target.closest(controler)
 
     // Focusable elements are links or buttons that are visible.
     const focusableElements = this.getFocusableElements(rootMenu)
@@ -592,7 +607,10 @@ class MenuLinks {
     targetMenuLink.focus()
 
     // If target has a submenu, open it but keep focus on parent
-    if (targetMenuLink.tagName === 'BUTTON' && targetMenuLink.getAttribute('aria-expanded') === 'false') {
+    if (
+      this.config.controllerTags.includes(targetMenuLink.tagName.toLowerCase()) &&
+      targetMenuLink.getAttribute('aria-expanded') === 'false'
+    ) {
       targetMenuLink.click()
     }
   }
@@ -642,14 +660,6 @@ class MenuLinks {
     linkToFocus.focus()
   }
 
-  closeSubmenuAndFocusParent(menuController) {
-    console.log('Closing submenu and focusing parent')
-    if (menuController?.tagName === 'BUTTON') {
-      menuController.setAttribute('aria-expanded', 'false')
-    }
-    menuController.focus()
-  }
-
   closeAllButtons(menuContainer) {
     if (!menuContainer) return
 
@@ -660,27 +670,18 @@ class MenuLinks {
       return
     }
 
-    // Build flexible selector for expanded elements using config
-    const expandedElementSelectors = [
-      `button.${this.config.buttonClass}[aria-expanded="true"]`,
-      // Also support buttons without the specific class but with aria-expanded
-      'button[aria-expanded="true"]',
-      // Support span elements that might act as menu triggers
-      `span.${this.config.linkClass}[aria-expanded="true"]`,
-    ]
+    // Build a list of all expanded controller elements
+    const controllerSelectors = this.config.controllerTags.flatMap(tag => [
+      `${tag}.${this.config.buttonClass}[aria-expanded="true"]`,
+      `${tag}[aria-expanded="true"]`,
+    ])
 
-    // Find all expanded elements within the menu container
-    const allExpandedElements = []
-    expandedElementSelectors.forEach(selector => {
-      const elements = menuContainer.querySelectorAll(selector)
-      allExpandedElements.push(...elements)
-    })
+    const expandedControllers = menuContainer.querySelectorAll(controllerSelectors.join(', '))
 
-    // Remove duplicates and close all expanded elements
-    const uniqueExpandedElements = [...new Set(allExpandedElements)]
-    uniqueExpandedElements.forEach(element => {
-      if (element !== this.domNode) {
-        element.setAttribute('aria-expanded', 'false')
+    // Close all others except the current one
+    expandedControllers.forEach(controller => {
+      if (controller !== this.domNode) {
+        controller.setAttribute('aria-expanded', 'false')
       }
     })
   }
@@ -706,20 +707,21 @@ class MenuLinks {
   getFocusableElements(menu) {
     if (!menu) return []
 
-    return Array.from(menu.querySelectorAll(`.${this.config.linkClass}:is(a[href], button)`)).filter(element => {
+    // Build selector for controller tags and links
+    const controller = this.config.controllerTags.join(', ')
+    const selector = `.${this.config.linkClass}:is(a[href], ${controller})`
+
+    return [...menu.querySelectorAll(selector)].filter(element => {
       // Use checkVisibility if available, otherwise fallback to basic visibility check
       if (typeof element.checkVisibility === 'function') {
-        return element.checkVisibility({
-          opacityProperty: true,
-          visibilityProperty: true,
-        })
+        return element.checkVisibility({ opacityProperty: true, visibilityProperty: true })
       }
     })
   }
 }
 
 /**
- * MenuButton class for menu buttons with submenu functionality
+ * MenuButton class for menu controllers (buttons,spans) with submenu functionality
  */
 class MenuButton extends MenuLinks {
   constructor(buttonNode, config, mobileMediaQuery) {
@@ -742,6 +744,9 @@ class MenuButton extends MenuLinks {
 
     // Set initial state
     this.buttonNode.setAttribute('aria-expanded', 'false')
+
+    // Add controller class for styling
+    this.buttonNode.classList.add(`${this.config.controllerClass}`)
 
     // Check if listeners are already attached to prevent duplicates
     if (!this.buttonNode.hasAttribute('data-menu')) {
@@ -843,8 +848,8 @@ class MenuButton extends MenuLinks {
     if (nestedList) {
       const firstItem = nestedList.querySelector(`.${this.config.linkClass}`)
       if (firstItem) {
-        // If the first item is not a button, it is a default menu so move to the first menu item within.
-        if (firstItem.tagName !== 'BUTTON' && firstItem.tagName !== 'A') {
+        // If the first item is not a controller or link, it is a default menu so move to the first menu item within.
+        if (!this.config.controllerTags.includes(firstItem.tagName.toLowerCase()) && firstItem.tagName !== 'A') {
           this.focusFirstItem(firstItem)
         } else {
           firstItem.focus()
@@ -904,16 +909,19 @@ class MenuButton extends MenuLinks {
     const currentDepth = parentMenu ? parseInt(parentMenu.getAttribute('data-depth')) : 0
 
     if (currentDepth === 0) {
-      // Top-level menu: close all top-level buttons except this one
+      // Top-level menu: close all top-level controllers except this one
       const topLevelMenu = menuContainer.querySelector('ul[data-depth="0"]')
-      if (topLevelMenu) {
-        const topLevelButtons = topLevelMenu.querySelectorAll(`button.${this.config.buttonClass}[aria-expanded="true"]`)
-        topLevelButtons.forEach(button => {
-          if (button !== this.buttonNode) {
-            button.setAttribute('aria-expanded', 'false')
-          }
-        })
-      }
+      if (!topLevelMenu) return
+
+      const selector = this.config.controllerTags
+        .map(tag => `${tag}.${this.config.buttonClass}[aria-expanded="true"]`)
+        .join(', ')
+
+      topLevelMenu.querySelectorAll(selector).forEach(controller => {
+        if (controller !== this.buttonNode) {
+          controller.setAttribute('aria-expanded', 'false')
+        }
+      })
     } else {
       // Nested menu: close only sibling buttons at the same level, preserve parent hierarchy
       if (parentMenu) {
