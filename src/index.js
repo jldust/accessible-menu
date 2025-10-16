@@ -4,7 +4,6 @@
  * @param {string} selector - CSS selector for elements to initialize
  * @param {HTMLElement|Document} context - Context to search within
  * @returns {HTMLElement[]} - Array of elements that haven't been initialized yet
- * TODO: Adjust keyboard arrows, feature does not work properly in nested menus
  */
 function once(id, selector, context = document) {
   const elements = Array.from(context.querySelectorAll(selector))
@@ -376,6 +375,18 @@ class MenuLinks {
     this.lastMenuitem = this.menuitemNodes[this.menuitemNodes.length - 1]
   }
 
+  /**
+   * Handles keydown events on menu link items.
+   *
+   * @param {KeyboardEvent} event - The keydown event.
+   * This method checks the key pressed and performs the corresponding action:
+   * - Up or ArrowUp: Calls the handleUpArrow method and prevents the default action.
+   * - Down or ArrowDown: Calls the handleDownArrow method and prevents the default action.
+   * - Left or ArrowLeft: Calls the handleLeftArrow method.
+   * - Right or ArrowRight: Calls the handleRightArrow method.
+   * - Tab: Calls the handleTab method.
+   * - Escape or Esc: Calls the handleEscape method and, if not on mobile, prevents the default action and stops propagation.
+   */
   onMenuitemKeydown(event) {
     let flag = false
 
@@ -424,7 +435,20 @@ class MenuLinks {
     }
   }
 
-  // Implement navigation methods (simplified versions of the original)
+  /*----------------------------------------------*\
+      Keydown functions for MenuLinks
+  \*----------------------------------------------*/
+
+  /**
+   * Handles the 'Up Arrow' key event for a menu item.
+   *
+   * @param {HTMLElement} target - The current active menu item.
+   *
+   * This method finds the previous sibling menu item of the current active menu item.
+   * If such a sibling menu item exists and it contains a link, it focuses on that link.
+   * Otherwise, it finds the closest parent 'ul' element, gets all its direct child menu item links,
+   * and focuses on the last one.
+   */
   handleUpArrow(target) {
     const currentIndex = this.menuitemNodes.indexOf(target)
     const prevItem = this.getPreviousItem(this.menuitemNodes, currentIndex)
@@ -481,6 +505,13 @@ class MenuLinks {
     }
   }
 
+  /**
+   * Handles the 'Left Arrow' key event for a menu item.
+   *
+   * This method checks if the parent menu of the current active menu item is a nested menu with data-depth > 0.
+   * If it is, it calls the `handleNestedMenuLeft` method.
+   * Otherwise, it calls the `handleNonNestedMenu` method with "left" as an argument.
+   */
   handleLeftArrow() {
     // Find parent ul element to check depth
     const parentMenu = this.domNode.closest('ul')
@@ -494,6 +525,14 @@ class MenuLinks {
     }
   }
 
+  /**
+   * Handles the 'Right Arrow' key event for a menu item.
+   *
+   * This method determines the type of the parent menu of the current active menu item based on its data-depth attribute.
+   * If the parent menu is a nested menu (data-depth > 0), it delegates the handling to the `handleNestedMenuRight` method.
+   * If the parent menu is not a nested menu (data-depth <= 0), it delegates the handling to the `handleNonNestedMenu` method.
+   * Both `handleNestedMenuRight` and `handleNonNestedMenu` methods are called with "right" as an argument.
+   */
   handleRightArrow() {
     // Find parent ul element to check depth
     const parentMenu = this.domNode.closest('ul')
@@ -507,10 +546,32 @@ class MenuLinks {
     }
   }
 
+  /**
+   * Handles the 'Tab' key event for a menu item.
+   *
+   * @param {Event} event - The key event.
+   *
+   * Preconditions:
+   * - The method is called within the context of a nested menu (depth > 0).
+   * - The target menu item is the first child of its parent menu.
+   *
+   * Actions:
+   * - If the above conditions are met, the method simulates a click on the menu controller button (if it is indeed a button), which is expected to toggle the visibility of the menu, typically closing it.
+   */
   handleTab(event) {
     // TODO
   }
 
+  /**
+   * Handles the 'Escape' key event for a menu item.
+   *
+   * This method locates the button that controls the current menu (identified by the 'data-menu-controls' attribute matching the menu's ID).
+   * If such a button is found, it performs two actions:
+   * - Sets the button's 'aria-expanded' attribute to 'false', effectively closing the menu.
+   * - Moves focus to the button, facilitating keyboard navigation back to the menu controller.
+   *
+   * Note: This method assumes the controlling button is associated with the menu via the 'data-menu-controls' attribute.
+   */
   handleEscape() {
     // Find controlling button and close menu
     const menuNode = this.domNode.closest('ul')
@@ -523,6 +584,14 @@ class MenuLinks {
     }
   }
 
+  /*----------------------------------------------*\
+      Supporting functions Keydown for MenuLinks
+  \*----------------------------------------------*/
+
+  /**
+   * Handles left arrow navigation in nested menus.
+   * Closes submenu and moves focus to parent menu item or navigates to previous top-level item.
+   */
   handleNestedMenuLeft() {
     // Find the closest menu container to get access to proper navigation
     const menuContainer = this.domNode.closest(this.config.menuSelector)
@@ -545,6 +614,10 @@ class MenuLinks {
     }
   }
 
+  /**
+   * Handles right arrow navigation in nested menus.
+   * Navigates to next top-level menu item with submenu handling.
+   */
   handleNestedMenuRight() {
     // Find the closest menu container to get access to proper navigation
     const menuContainer = this.domNode.closest(this.config.menuSelector)
@@ -557,10 +630,22 @@ class MenuLinks {
     }
   }
 
+  /**
+   * Finds the menu controller for a given menu node.
+   *
+   * @param {HTMLElement} menuNode - The menu node to find controller for
+   * @returns {HTMLElement|null} - The menu controller element or null
+   */
   findMenuController(menuNode, menuContainer) {
     return menuContainer.querySelector(`[data-menu-controls="${menuNode.id}"]`)
   }
 
+  /**
+   * Finds the top-level controller item for a nested menu structure.
+   *
+   * @param {HTMLElement} menuNode - The current menu node
+   * @returns {HTMLElement|null} - The top-level controller item or null
+   */
   findControllerItem(menuContainer) {
     // Traverse up from current element to find top-level menu item
     let currentElement = this.domNode
@@ -585,6 +670,12 @@ class MenuLinks {
     return null
   }
 
+  /**
+   * Navigates to a top-level menu item in the specified direction.
+   *
+   * @param {HTMLElement} currentItem - The current top-level menu item
+   * @param {string} direction - Either "next" or "previous"
+   */
   navigateToTopLevelItem(currentItem, direction, menuContainer) {
     const topLevelItems = this.getTopLevelMenuItems(menuContainer)
     const currentIndex = topLevelItems.indexOf(currentItem)
@@ -615,6 +706,11 @@ class MenuLinks {
     }
   }
 
+  /**
+   * Gets all top-level menu items.
+   *
+   * @returns {HTMLElement[]} - Array of top-level menu items
+   */
   getTopLevelMenuItems(menuContainer) {
     // Find top level menu with data-depth="0"
     let topMenu = menuContainer.querySelector('[data-depth="0"]')
@@ -632,6 +728,16 @@ class MenuLinks {
     })
   }
 
+  /**
+   * Handles the navigation for non-nested menus based on the direction of navigation.
+   *
+   * @param {string} direction - The direction of navigation ("right" or "left").
+   *
+   * This method finds the next or previous sibling menu item of the current active menu item based on the direction.
+   * If such a sibling menu item exists and it contains a link, it focuses on that link.
+   * Otherwise, it focuses on the first menu item link in the parent menu (or the last one if the direction is "left").
+   * For top-level menu items, this also closes any open submenus when navigating away.
+   */
   handleNonNestedMenu(direction) {
     // Find parent ul element
     const parentMenu = this.domNode.closest('ul')
@@ -660,6 +766,15 @@ class MenuLinks {
     linkToFocus.focus()
   }
 
+  /**
+   * Closes all menu buttons except for the current one.
+   *
+   * This method finds all buttons within the menu that have their `aria-expanded` attribute set to `true`,
+   * indicating that their associated submenu is open. It then proceeds to close all these menus by setting
+   * their `aria-expanded` attribute to `false`. It does this for both top-level menu buttons and buttons in
+   * submenus, ensuring that all other menus are closed except for the menu associated with the current
+   * `domNode` (the menu button that invoked this method).
+   */
   closeAllButtons(menuContainer) {
     if (!menuContainer) return
 
@@ -686,14 +801,39 @@ class MenuLinks {
     })
   }
 
+  /**
+   * Retrieves the next item in a menu based on the current target index.
+   * If the target index is the last item, it returns the first item,
+   * effectively treating the menu as a circular array.
+   *
+   * @param {Array} menuItems - An array of menu items.
+   * @param {number} targetIndex - The current index in the menu items array.
+   * @returns The next item in the menu. If the target index is the last item, returns the first item in the array.
+   */
   getNextItem(menuItems, targetIndex) {
     return this.isLastItem(menuItems, targetIndex) ? menuItems[0] : menuItems[targetIndex + 1]
   }
 
+  /**
+   * Retrieves the previous item in a menu based on the current target index.
+   * If the target index is the first item (0), it returns the last item,
+   * effectively treating the menu as a circular array.
+   *
+   * @param {Array} menuItems - An array of menu items.
+   * @param {number} targetIndex - The current index in the menu items array.
+   * @returns The previous item in the menu. If the target index is 0, returns the last item in the array.
+   */
   getPreviousItem(menuItems, targetIndex) {
     return targetIndex === 0 ? menuItems[menuItems.length - 1] : menuItems[targetIndex - 1]
   }
 
+  /**
+   * Checks if the current item is the last item in the menu.
+   *
+   * @param {HTMLElement[]} menuItems - An array of menu items.
+   * @param {number} targetIndex - The index of the current item in the menuItems array.
+   * @returns {boolean} - Returns true if the current item is the last item in the menu, otherwise false.
+   */
   isLastItem(menuItems, targetIndex) {
     return targetIndex === menuItems.length - 1
   }
@@ -764,6 +904,20 @@ class MenuButton extends MenuLinks {
     document.addEventListener('mousedown', this.onBackgroundMousedown.bind(this))
   }
 
+  /**
+   * Handles keydown events on the menu button.
+   *
+   * @param {Event} event - The keydown event.
+   *
+   * This method checks the key pressed during the event and performs actions based on the key:
+   * - 'Up' or 'ArrowUp': Calls the `handleUpArrow` method with the button node.
+   * - 'Down' or 'ArrowDown': If the next sibling of the button node has a 'data-depth' attribute of '1', opens the popup, focuses on the first menu item, and prevents the default action. Otherwise, calls the `handleDownArrow` method with the button node and prevents the default action.
+   * - 'Left' or 'ArrowLeft': If the next sibling of the button node does not have a 'data-depth' attribute of '1', closes the popup and focuses on the button node. Otherwise, calls the `handleLeftArrow` method with the button node.
+   * - 'Right' or 'ArrowRight': If the next sibling of the button node does not have a 'data-depth' attribute of '1', opens the popup and focuses on the first menu item. Otherwise, calls the `handleRightArrow` method with the button node.
+   * - 'Esc' or 'Escape': Closes the popup and prevents the default action.
+   *
+   * If the 'ctrl', 'alt', or 'meta' key is pressed during the event, the method returns without doing anything.
+   */
   onButtonKeydown(event) {
     if (event.ctrlKey || event.altKey || event.metaKey) {
       return
@@ -826,6 +980,17 @@ class MenuButton extends MenuLinks {
     }
   }
 
+  /**
+   * Handles click events on the menu button.
+   *
+   * @param {Event} event - The click event.
+   *
+   * This method checks if the menu is open:
+   * - If the menu is open, it calls the `closePopup` method to close the menu.
+   * - If the menu is not open, it calls the `openPopup` method to open the menu.
+   *
+   * After handling the menu, it stops the propagation of the event and prevents the default action.
+   */
   onButtonClick(event) {
     if (this.isOpen()) {
       this.closePopup()
@@ -841,6 +1006,15 @@ class MenuButton extends MenuLinks {
     event.preventDefault()
   }
 
+  /**
+   * Focuses on the first menu item of the nested list related to the given element.
+   *
+   * @param {HTMLElement} element - The element related to the nested list.
+   *
+   * This method finds the nested list related to the given element by using the `data-menu-controls` attribute.
+   * If the nested list exists, it finds the first menu item in the list and focuses on it.
+   * If the first menu item is not a button or link, it recursively calls itself to focus on the first menu item within the nested menu.
+   */
   focusFirstItem(element) {
     const controlsId = element.getAttribute('data-menu-controls')
     const nestedList = controlsId ? document.getElementById(controlsId) : null
@@ -949,6 +1123,14 @@ class MenuButton extends MenuLinks {
     }
   }
 
+  /**
+   * Handles the mousedown event on the background.
+   *
+   * @param {Event} event - The mousedown event.
+   *
+   * This method checks if the mousedown event occurred outside the menu container.
+   * If it did and the menu is open and the device is not mobile, it sets focus to the button node and closes the popup menu.
+   */
   onBackgroundMousedown(event) {
     const menuContainer = this.buttonNode.closest(this.config.menuSelector)
 
