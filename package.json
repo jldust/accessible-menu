@@ -1,7 +1,7 @@
 {
   "name": "@jldust/accessible-menu",
   "version": "1.0.0",
-  "description": "An accessible menu component that supports keyboard navigation, mobile controls, and ARIA attributes",
+  "description": "An accessible menu package that provides full keyboard navigation and mobile controls",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
