@@ -15,7 +15,7 @@ npm install @jldust/accessible-menu
 <button id="mobile-menu-btn" aria-expanded="false">Menu</button>
 
 <!-- Menu structure -->
-<nav class="c-menu" data-breakpoint="768" data-mobile="#mobile-menu-btn">
+<nav class="c-menu" data-breakpoint="768">
   <ul class="menu">
     <li class="menu__item">
       <a href="#" class="menu__link">Home</a>
@@ -38,38 +38,40 @@ npm install @jldust/accessible-menu
 ### 2. JavaScript Initialization
 
 ```javascript
-import { AccessibleMenu } from '@jldust/accessible-menu';
+import { AccessibleMenu } from '@jldust/accessible-menu'
 
 // Basic initialization
-const menu = new AccessibleMenu();
-menu.init();
+const menu = new AccessibleMenu()
+menu.init()
 
 // Or with custom configuration
 const menu = new AccessibleMenu({
   menuSelector: '.my-menu',
   buttonClass: 'my-button',
   linkClass: 'my-link',
-  mobileBreakpoint: 1024
-});
-menu.init();
+  mobileBreakpoint: 1024,
+})
+menu.init()
 ```
 
 ### 3. Custom Configuration Example
 
 ```javascript
 const customMenu = new AccessibleMenu({
-  menuSelector: '.navigation',           // Your menu container class
-  buttonClass: 'nav-button',            // Your button class
-  linkClass: 'nav-link',                // Your link class
-  itemClass: 'nav-item',                // Your menu item class
-  mobileBreakpoint: 1024,               // Custom breakpoint
-  mobileControlId: 'hamburger-btn'      // Mobile toggle button ID
-});
+  menuSelector: '.navigation', // Your menu container class
+  buttonClass: 'nav-button', // Your button class
+  linkClass: 'nav-link', // Your link class
+  itemClass: 'nav-item', // Your menu item class
+  mobileBreakpoint: 1024, // Custom breakpoint
+  mobileControlId: 'hamburger-btn', // Mobile toggle button ID
+})
 
-customMenu.init();
+customMenu.init()
 ```
 
 ## Required HTML Attributes
+
+These are controlled by the library and attached when the releative variables exist.
 
 - `data-plugin-id` - Unique ID for menu buttons with submenus
 - `data-depth` - Depth level for nested menus (1, 2, 3, etc.)

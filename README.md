@@ -22,40 +22,37 @@ npm install @jldust/accessible-menu
 ### ES6 Modules
 
 ```javascript
-import { AccessibleMenu } from '@jldust/accessible-menu';
+import { AccessibleMenu } from '@jldust/accessible-menu'
 
 // Initialize with default settings
-const menu = new AccessibleMenu();
-menu.init();
+const menu = new AccessibleMenu()
+menu.init()
 ```
 
 ### With CSS Styles
 
 ```html
 <!-- Include the CSS for menu styling -->
-<link
-  rel="stylesheet"
-  href="node_modules/@jldust/accessible-menu/dist/menu-styles.css"
-/>
+<link rel="stylesheet" href="node_modules/@jldust/accessible-menu/dist/menu-styles.css" />
 
 <!-- Or import in your CSS/SCSS -->
 @import '~@jldust/accessible-menu/dist/menu-styles.css';
 ```
 
 ```javascript
-import { AccessibleMenu } from '@jldust/accessible-menu';
+import { AccessibleMenu } from '@jldust/accessible-menu'
 
-const menu = new AccessibleMenu();
-menu.init();
+const menu = new AccessibleMenu()
+menu.init()
 ```
 
 ### CommonJS
 
 ```javascript
-const { AccessibleMenu } = require('@jldust/accessible-menu');
+const { AccessibleMenu } = require('@jldust/accessible-menu')
 
-const menu = new AccessibleMenu();
-menu.init();
+const menu = new AccessibleMenu()
+menu.init()
 ```
 
 ### UMD (Browser)
@@ -63,8 +60,8 @@ menu.init();
 ```html
 <script src="node_modules/@jldust/accessible-menu/dist/index.umd.min.js"></script>
 <script>
-  const menu = new AccessibleMenu.AccessibleMenu();
-  menu.init();
+  const menu = new AccessibleMenu.AccessibleMenu()
+  menu.init()
 </script>
 ```
 
@@ -73,7 +70,7 @@ menu.init();
 ### Custom Configuration
 
 ```javascript
-import { AccessibleMenu } from '@jldust/accessible-menu';
+import { AccessibleMenu } from '@jldust/accessible-menu'
 
 const menu = new AccessibleMenu({
   menuSelector: '.my-menu',
@@ -82,31 +79,28 @@ const menu = new AccessibleMenu({
   itemClass: 'my-menu__item',
   mobileBreakpoint: 1024,
   mobileControlId: 'mobile-menu-toggle',
-});
+})
 
-menu.init();
+menu.init()
 ```
 
 ### Configuration Options
 
-| Option                    | Type             | Default             | Description                                 |
-| ------------------------- | ---------------- | ------------------- | ------------------------------------------- |
-| `menuSelector`            | `string`         | `'.c-menu'`         | CSS selector for menu containers            |
-| `buttonClass`             | `string`         | `'menu__link'`      | CSS class for menu buttons                  |
-| `linkClass`               | `string`         | `'menu__link'`      | CSS class for menu links                    |
-| `itemClass`               | `string`         | `'menu__item'`      | CSS class for menu items                    |
-| `mobileBreakpoint`        | `number`         | `768`               | Mobile breakpoint in pixels                 |
-| `mobileControlId`         | `string \| null` | `'nav-trigger'`       | ID of the mobile menu control button        |
-| `dataBreakpointAttribute` | `string`         | `'data-breakpoint'` | Data attribute for custom breakpoint        |
-| `dataMobileAttribute`     | `string`         | `'data-mobile'`     | Data attribute for mobile control reference |
-| `dataPluginIdAttribute`   | `string`         | `'data-plugin-id'`  | Data attribute for plugin ID                |
+| Option             | Type             | Default         | Description                          |
+| ------------------ | ---------------- | --------------- | ------------------------------------ |
+| `menuSelector`     | `string`         | `'.c-menu'`     | CSS selector for menu containers     |
+| `buttonClass`      | `string`         | `'menu__link'`  | CSS class for menu buttons           |
+| `linkClass`        | `string`         | `'menu__link'`  | CSS class for menu links             |
+| `itemClass`        | `string`         | `'menu__item'`  | CSS class for menu items             |
+| `mobileBreakpoint` | `number`         | `768`           | Mobile breakpoint in pixels          |
+| `mobileControlId`  | `string \| null` | `'nav-trigger'` | ID of the mobile menu control button |
 
 ## HTML Structure
 
 ### Basic Menu Structure
 
 ```html
-<nav class="c-menu" data-breakpoint="768" data-mobile="#mobile-toggle">
+<nav class="c-menu" data-breakpoint="768">
   <ul class="menu">
     <li class="menu__item">
       <a href="#" class="menu__link">Home</a>
@@ -178,10 +172,10 @@ Initialize menus within the specified context.
 
 ```javascript
 // Initialize all menus on the page
-menu.init();
+menu.init()
 
 // Initialize menus within a specific container
-menu.init(document.querySelector('.header'));
+menu.init(document.querySelector('.header'))
 ```
 
 ### `destroy(menuContainer)`
@@ -189,8 +183,8 @@ menu.init(document.querySelector('.header'));
 Destroy a specific menu instance.
 
 ```javascript
-const menuElement = document.querySelector('.c-menu');
-menu.destroy(menuElement);
+const menuElement = document.querySelector('.c-menu')
+menu.destroy(menuElement)
 ```
 
 ### `destroyAll()`
@@ -198,7 +192,7 @@ menu.destroy(menuElement);
 Destroy all menu instances.
 
 ```javascript
-menu.destroyAll();
+menu.destroyAll()
 ```
 
 ## CSS Styles
@@ -209,10 +203,7 @@ The package includes pre-built CSS styles that handle menu open/close animations
 
 ```html
 <!-- Include the CSS file -->
-<link
-  rel="stylesheet"
-  href="node_modules/@jldust/accessible-menu/dist/menu-styles.css"
-/>
+<link rel="stylesheet" href="node_modules/@jldust/accessible-menu/dist/menu-styles.css" />
 ```
 
 ```css
@@ -234,26 +225,19 @@ The CSS relies on these key selectors for functionality:
 
 ```css
 /* Hidden state */
-button[aria-expanded='false'] + *:not([data-depth='0']) {
+.controller[aria-expanded='false'] + *:not([data-depth='0']) {
   opacity: 0;
   visibility: hidden;
   transform: translateY(-10px);
 }
 
 /* Visible state */
-button[aria-expanded='true'] + *:not([data-depth='0']) {
+.controller[aria-expanded='true'] + *:not([data-depth='0']) {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
 }
 ```
-
-## CSS Classes Added by JavaScript
-
-The component automatically adds these CSS classes:
-
-- `js-prevent-scroll` - Added to `<body>` when mobile menu is open
-- Various ARIA attributes (`aria-expanded`, `aria-controls`, `aria-haspopup`, etc.)
 
 ## Dependencies
 
