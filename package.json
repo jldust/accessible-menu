@@ -1,6 +1,5 @@
 {
   "name": "@jldust/accessible-menu",
-  "scope": "jldust",
   "version": "1.0.0",
   "description": "An accessible menu package that provides full keyboard navigation and mobile controls",
   "type": "module",
