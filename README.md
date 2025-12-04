@@ -277,7 +277,7 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Accessibility
 
-To the best of our ability this library follows WCAG 2.2 AA guidelines and implements WAI-ARIA best practices for navigation menus. It has been tested with screen readers and keyboard-only navigation.
+To the best of our ability this library follows WCAG 2.2 AA guidelines and implements WAI-ARIA best practices for navigation menus. It has been tested with macOS VoiceOver and keyboard-only navigation.
 
 ## Changelog
 
