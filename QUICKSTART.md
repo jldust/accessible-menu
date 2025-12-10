@@ -38,26 +38,26 @@ npm install @jldust/accessible-menu
 ### 2. JavaScript Initialization
 
 ```javascript
-import { AccessibleMenu } from '@jldust/accessible-menu'
+import { Menubar } from '@jldust/accessible-menu'
 
 // Basic initialization
-const menu = new AccessibleMenu()
-menu.init()
+const menu = new Menubar()
+await menu.init()
 
 // Or with custom configuration
-const menu = new AccessibleMenu({
+const menu = new Menubar({
   menuSelector: '.my-menu',
   buttonClass: 'my-button',
   linkClass: 'my-link',
   mobileBreakpoint: 1024,
 })
-menu.init()
+await menu.init()
 ```
 
 ### 3. Custom Configuration Example
 
 ```javascript
-const customMenu = new AccessibleMenu({
+const customMenu = new Menubar({
   menuSelector: '.navigation', // Your menu container class
   buttonClass: 'nav-button', // Your button class
   linkClass: 'nav-link', // Your link class
@@ -66,7 +66,7 @@ const customMenu = new AccessibleMenu({
   mobileControlId: 'hamburger-btn', // Mobile toggle button ID
 })
 
-customMenu.init()
+await customMenu.init()
 ```
 
 ## Required HTML Attributes

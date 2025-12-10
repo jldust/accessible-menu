@@ -135,19 +135,21 @@
     <script>
       // Initialize the menu with default settings
       /*
-      const menu = new AccessibleMenu.AccessibleMenu()
-      menu.init()
+      const menu = new AccessibleMenu.Menubar()
+      await menu.init()
       */
       // Or with custom configuration:
 
-      const menu = new AccessibleMenu.AccessibleMenu({
-        menuSelector: '.c-menu',
-        buttonClass: 'menu__link',
-        linkClass: 'menu__link',
-        mobileBreakpoint: 768,
-        mobileControlId: 'mobile-toggle',
-      })
-      menu.init()
+      ;(async () => {
+        const menu = new AccessibleMenu.Menubar({
+          menuSelector: '.c-menu',
+          buttonClass: 'menu__link',
+          linkClass: 'menu__link',
+          mobileBreakpoint: 768,
+          mobileControlId: 'mobile-toggle',
+        })
+        await menu.init()
+      })()
     </script>
   </body>
 </html>

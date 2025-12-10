@@ -1,4 +1,4 @@
-import { AccessibleMenu } from '../src/index.js'
+import { Menubar } from '../src/index.js'
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -15,7 +15,7 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-describe('AccessibleMenu', () => {
+describe('Menubar', () => {
   let menuContainer
 
   beforeEach(() => {
@@ -85,7 +85,7 @@ describe('AccessibleMenu', () => {
 
   describe('Constructor and Configuration', () => {
     it('should use default configuration when no config provided', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       expect(menu.config.menuSelector).toBe('.c-menu')
       expect(menu.config.buttonClass).toBe('menu__link')
       expect(menu.config.linkClass).toBe('menu__link')
@@ -100,7 +100,7 @@ describe('AccessibleMenu', () => {
         mobileBreakpoint: 1024,
         buttonClass: 'custom-button',
       }
-      const menu = new AccessibleMenu(customConfig)
+      const menu = new Menubar(customConfig)
 
       expect(menu.config.menuSelector).toBe('.custom-menu')
       expect(menu.config.mobileBreakpoint).toBe(1024)
@@ -109,7 +109,7 @@ describe('AccessibleMenu', () => {
     })
 
     it('should initialize empty menuInstances Map', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       expect(menu.menuInstances).toBeInstanceOf(Map)
       expect(menu.menuInstances.size).toBe(0)
     })
@@ -117,7 +117,7 @@ describe('AccessibleMenu', () => {
 
   describe('ARIA Controls Initialization', () => {
     it('should set ARIA attributes on menu buttons', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       menu.init()
 
       const button = menuContainer.querySelector('button')
@@ -128,7 +128,7 @@ describe('AccessibleMenu', () => {
     })
 
     it('should handle menu items without span elements', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       menu.init()
 
       // Since we don't have span elements in the basic structure,
@@ -141,7 +141,7 @@ describe('AccessibleMenu', () => {
     })
 
     it('should set depth attributes on menu levels', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       menu.init()
 
       // Check that the top-level menu has depth 0
@@ -170,7 +170,7 @@ describe('AccessibleMenu', () => {
         </nav>
       `
 
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       expect(() => menu.init()).not.toThrow()
 
       const link = document.querySelector('a')
@@ -180,7 +180,7 @@ describe('AccessibleMenu', () => {
 
   describe('Menu Controller Initialization', () => {
     it('should create MenuController instances for each menu', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       menu.init()
 
       expect(menu.menuInstances.has(menuContainer)).toBe(true)
@@ -188,7 +188,7 @@ describe('AccessibleMenu', () => {
     })
 
     it('should use custom breakpoint from data attribute', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       menu.init()
 
       const instance = menu.menuInstances.get(menuContainer)
@@ -198,7 +198,7 @@ describe('AccessibleMenu', () => {
 
   describe('Mobile Menu Controls', () => {
     it('should initialize mobile menu controls when present', () => {
-      const menu = new AccessibleMenu({ mobileControlId: 'mobile-toggle' })
+      const menu = new Menubar({ mobileControlId: 'mobile-toggle' })
       menu.init()
 
       const mobileButton = document.getElementById('mobile-toggle')
@@ -211,7 +211,7 @@ describe('AccessibleMenu', () => {
     let menu, button
 
     beforeEach(() => {
-      menu = new AccessibleMenu()
+      menu = new Menubar()
       menu.init()
       button = menuContainer.querySelector('button')
     })
@@ -274,7 +274,7 @@ describe('AccessibleMenu', () => {
     let menu, links
 
     beforeEach(() => {
-      menu = new AccessibleMenu()
+      menu = new Menubar()
       menu.init()
       // Get only top-level links for navigation testing
       links = Array.from(menuContainer.querySelectorAll('ul[data-depth="0"] > li > .menu__link'))
@@ -313,7 +313,7 @@ describe('AccessibleMenu', () => {
     let menu, mobileButton
 
     beforeEach(() => {
-      menu = new AccessibleMenu({ mobileControlId: 'mobile-toggle', mobileBreakpoint: 768 })
+      menu = new Menubar({ mobileControlId: 'mobile-toggle', mobileBreakpoint: 768 })
       menu.init()
       mobileButton = document.getElementById('mobile-toggle')
     })
@@ -359,7 +359,7 @@ describe('AccessibleMenu', () => {
 
   describe('Instance Management', () => {
     it('should destroy specific menu instance', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       menu.init()
 
       expect(menu.menuInstances.has(menuContainer)).toBe(true)
@@ -370,7 +370,7 @@ describe('AccessibleMenu', () => {
     })
 
     it('should destroy all menu instances', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       menu.init()
 
       // Add another menu
@@ -431,7 +431,7 @@ describe('AccessibleMenu', () => {
     })
 
     it('should handle deeply nested menu structures', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       menu.init()
 
       const deepButtons = menuContainer.querySelectorAll('button')
@@ -443,7 +443,7 @@ describe('AccessibleMenu', () => {
     })
 
     it('should handle span elements with submenus', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       menu.init()
 
       const span = menuContainer.querySelector('span')
@@ -463,7 +463,7 @@ describe('AccessibleMenu', () => {
         </nav>
       `
 
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       expect(() => menu.init()).not.toThrow()
     })
 
@@ -478,7 +478,7 @@ describe('AccessibleMenu', () => {
         </nav>
       `
 
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       menu.init()
 
       const button = document.querySelector('button')
@@ -487,7 +487,7 @@ describe('AccessibleMenu', () => {
     })
 
     it('should prevent default behavior on relevant keyboard events', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       menu.init()
 
       const button = menuContainer.querySelector('button')
@@ -502,7 +502,7 @@ describe('AccessibleMenu', () => {
 
   describe('Accessibility Features', () => {
     it('should maintain proper ARIA states during interaction', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       menu.init()
 
       const button = menuContainer.querySelector('button')
@@ -521,7 +521,7 @@ describe('AccessibleMenu', () => {
     })
 
     it('should set proper aria-label from button text content', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       menu.init()
 
       const button = menuContainer.querySelector('button')
@@ -529,7 +529,7 @@ describe('AccessibleMenu', () => {
     })
 
     it('should maintain focus management during navigation', () => {
-      const menu = new AccessibleMenu()
+      const menu = new Menubar()
       menu.init()
 
       const button = menuContainer.querySelector('button')

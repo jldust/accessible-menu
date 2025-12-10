@@ -2,6 +2,17 @@
 
 A highly configurable, accessible menu component that supports keyboard navigation, mobile controls, and ARIA attributes.
 
+## Current Support
+
+This library currently implements the **[Menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/)** from the WAI-ARIA Authoring Practices Guide.
+
+### Future Plans
+
+We have plans to support additional menu patterns, including:
+
+- Tree menu pattern
+- And more to come
+
 ## Features
 
 - **Keyboard Navigation**: Full arrow key support, tab navigation, and escape key handling
@@ -22,11 +33,11 @@ npm install @jldust/accessible-menu
 ### ES6 Modules
 
 ```javascript
-import { AccessibleMenu } from '@jldust/accessible-menu'
+import { Menubar } from '@jldust/accessible-menu'
 
 // Initialize with default settings
-const menu = new AccessibleMenu()
-menu.init()
+const menu = new Menubar()
+await menu.init()
 ```
 
 ### With CSS Styles
@@ -40,19 +51,19 @@ menu.init()
 ```
 
 ```javascript
-import { AccessibleMenu } from '@jldust/accessible-menu'
+import { Menubar } from '@jldust/accessible-menu'
 
-const menu = new AccessibleMenu()
-menu.init()
+const menu = new Menubar()
+await menu.init()
 ```
 
 ### CommonJS
 
 ```javascript
-const { AccessibleMenu } = require('@jldust/accessible-menu')
+const { Menubar } = require('@jldust/accessible-menu')
 
-const menu = new AccessibleMenu()
-menu.init()
+const menu = new Menubar()
+await menu.init()
 ```
 
 ### UMD (Browser)
@@ -60,8 +71,8 @@ menu.init()
 ```html
 <script src="node_modules/@jldust/accessible-menu/dist/index.umd.min.js"></script>
 <script>
-  const menu = new AccessibleMenu.AccessibleMenu()
-  menu.init()
+  const menu = new AccessibleMenu.Menubar()
+  await menu.init()
 </script>
 ```
 
@@ -70,9 +81,9 @@ menu.init()
 ### Custom Configuration
 
 ```javascript
-import { AccessibleMenu } from '@jldust/accessible-menu'
+import { Menubar } from '@jldust/accessible-menu'
 
-const menu = new AccessibleMenu({
+const menu = new Menubar({
   menuSelector: '.my-menu',
   buttonClass: 'my-menu__button',
   linkClass: 'my-menu__link',
@@ -81,19 +92,19 @@ const menu = new AccessibleMenu({
   mobileControlId: 'mobile-menu-toggle',
 })
 
-menu.init()
+await menu.init()
 ```
 
 ### Configuration Options
 
-| Option             | Type             | Default         | Description                          |
-| ------------------ | ---------------- | --------------- | ------------------------------------ |
-| `menuSelector`     | `string`         | `'.c-menu'`     | CSS selector for menu containers     |
-| `buttonClass`      | `string`         | `'menu__link'`  | CSS class for menu buttons           |
-| `linkClass`        | `string`         | `'menu__link'`  | CSS class for menu links             |
-| `itemClass`        | `string`         | `'menu__item'`  | CSS class for menu items             |
-| `mobileBreakpoint` | `number`         | `768`           | Mobile breakpoint in pixels          |
-| `mobileControlId`  | `string \| null` | `'nav-toggle'`  | ID of the mobile menu control button |
+| Option             | Type             | Default        | Description                          |
+| ------------------ | ---------------- | -------------- | ------------------------------------ |
+| `menuSelector`     | `string`         | `'.c-menu'`    | CSS selector for menu containers     |
+| `buttonClass`      | `string`         | `'menu__link'` | CSS class for menu buttons           |
+| `linkClass`        | `string`         | `'menu__link'` | CSS class for menu links             |
+| `itemClass`        | `string`         | `'menu__item'` | CSS class for menu items             |
+| `mobileBreakpoint` | `number`         | `768`          | Mobile breakpoint in pixels          |
+| `mobileControlId`  | `string \| null` | `'nav-toggle'` | ID of the mobile menu control button |
 
 ## HTML Structure
 

@@ -1,7 +1,7 @@
-import { AccessibleMenu } from '@jldust/accessible-menu'
+import { Menubar } from '@jldust/accessible-menu'
 
 // Example 1: Using with custom CSS classes and mobile breakpoint
-const customMenu = new AccessibleMenu({
+const customMenu = new Menubar({
   menuSelector: '.my-navigation',
   buttonClass: 'nav-button',
   linkClass: 'nav-link',
@@ -10,21 +10,21 @@ const customMenu = new AccessibleMenu({
   mobileControlId: 'hamburger-menu',
 })
 
-customMenu.init()
+await customMenu.init()
 
 // Example 2: Initialize only a specific menu container
 const specificContainer = document.querySelector('.header-menu')
-customMenu.init(specificContainer)
+await customMenu.init(specificContainer)
 
 // Example 3: Using with different configurations for different menus
-const mainMenu = new AccessibleMenu({
+const mainMenu = new Menubar({
   menuSelector: '.main-menu',
   buttonClass: 'main-menu__button',
   linkClass: 'main-menu__link',
   mobileBreakpoint: 768,
 })
 
-const footerMenu = new AccessibleMenu({
+const footerMenu = new Menubar({
   menuSelector: '.footer-menu',
   buttonClass: 'footer-menu__button',
   linkClass: 'footer-menu__link',
@@ -32,8 +32,8 @@ const footerMenu = new AccessibleMenu({
 })
 
 // Initialize both menus
-mainMenu.init()
-footerMenu.init()
+await mainMenu.init()
+await footerMenu.init()
 
 // Example 4: Dynamic menu creation and initialization
 function createDynamicMenu() {
