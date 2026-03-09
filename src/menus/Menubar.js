@@ -703,7 +703,7 @@ class MenuLinks {
     }
 
     const targetMenuItem = topLevelItems[targetIndex]
-    let targetMenuLink = targetMenuItem.querySelector(`.${this.config.linkClass}`)
+    const targetMenuLink = targetMenuItem.querySelector(`.${this.config.linkClass}`)
 
     this.closeAllButtons(menuContainer)
 
@@ -881,7 +881,10 @@ class MenuLinks {
     return [...menu.querySelectorAll(selector)].filter(element => {
       // Use checkVisibility if available, otherwise fallback to basic visibility check
       if (typeof element.checkVisibility === 'function') {
-        return element.checkVisibility({ opacityProperty: true, visibilityProperty: true })
+        return element.checkVisibility({
+          opacityProperty: true,
+          visibilityProperty: true,
+        })
       }
     })
   }
@@ -957,6 +960,11 @@ class MenuButton extends MenuLinks {
     }
 
     let flag = false
+    let relatedMenu = null
+
+    if (this.buttonNode.nextElementSibling) {
+      relatedMenu = this.buttonNode.nextElementSibling
+    }
 
     switch (event.key) {
       case 'Up':
@@ -966,9 +974,8 @@ class MenuButton extends MenuLinks {
 
       case 'Down':
       case 'ArrowDown':
-        const relatedMenuDown = this.buttonNode.nextElementSibling
         // Second level menu opens with down arrow
-        if (relatedMenuDown.dataset.depth == '1') {
+        if (relatedMenu.dataset.depth == '1') {
           if (!this.mobileMediaQuery.matches) {
             this.closeAll()
           }
@@ -988,7 +995,6 @@ class MenuButton extends MenuLinks {
 
       case 'Right':
       case 'ArrowRight':
-        const relatedMenu = this.buttonNode.nextElementSibling
         // Deeply nested menus open with right arrow
         if (relatedMenu && relatedMenu.dataset.depth !== '1') {
           this.openPopup()
