@@ -84,7 +84,7 @@ await menu.init()
 import { Menubar } from '@jldust/accessible-menu'
 
 const menu = new Menubar({
-  menuSelector: '.my-menu',
+  menuSelector: 'my-menu',
   buttonClass: 'my-menu__button',
   linkClass: 'my-menu__link',
   itemClass: 'my-menu__item',
@@ -99,7 +99,7 @@ await menu.init()
 
 | Option             | Type             | Default        | Description                          |
 | ------------------ | ---------------- | -------------- | ------------------------------------ |
-| `menuSelector`     | `string`         | `'.c-menu'`    | CSS selector for menu containers     |
+| `menuSelector`     | `string`         | `'c-menu'`    | CSS selector for menu containers     |
 | `buttonClass`      | `string`         | `'menu__link'` | CSS class for menu buttons           |
 | `linkClass`        | `string`         | `'menu__link'` | CSS class for menu links             |
 | `itemClass`        | `string`         | `'menu__item'` | CSS class for menu items             |

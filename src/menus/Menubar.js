@@ -31,7 +31,7 @@ const DEFAULT_CONFIG = {
   controllerClass: 'controller',
   mobileBreakpoint: 768,
   mobileControlId: 'nav-toggle',
-  hasMobile: true,
+  hasMobile: false,
   dataPluginIdAttribute: 'data-plugin-id',
 }
 
@@ -70,7 +70,7 @@ export class Menubar {
 
     // Only attach mobile controls if hasMobile is true
     if (this.config.hasMobile) {
-      await this.attachMobileControls(context)
+      await this.attachMobileControls()
     }
   }
 
@@ -79,7 +79,7 @@ export class Menubar {
    * @param {HTMLElement|Document} context - The context to search for menus
    */
   attachAriaControls(context) {
-    const menus = once('ariaControls', this.config.menuSelector, context)
+    const menus = once('ariaControls', `.${this.config.menuSelector}`, context)
 
     menus.forEach(menu => {
       // Set depth attributes for all menu levels
@@ -191,21 +191,21 @@ export class Menubar {
 
   /**
    * Attach mobile menu controls
-   * @param {HTMLElement|Document} context - The context to search for menus
    */
-  async attachMobileControls(context) {
-    const { menuSelector, hasMobile, mobileControlId } = this.config
+  async attachMobileControls() {
+    const { hasMobile, mobileControlId } = this.config
 
-    // If no menus and no control ID, nothing to do
-    if (!mobileControlId) return
+    if (!mobileControlId || !hasMobile) return
 
-    // Find menus with an existing data-mobile attribute
-    const menus = once('mobileMenuControls', `${menuSelector}`, context)
+    // Only initialize mobile for menus owned by this instance, with deduplication
+    const menus = [...this.menuInstances.keys()].filter(menu => {
+      const attr = 'data-once-mobileMenuControls'
+      if (menu.hasAttribute(attr)) return false
+      menu.setAttribute(attr, 'true')
+      return true
+    })
 
-    // If we already have menus with data-mobile, use them
-    if (hasMobile) {
-      return this.initializeMobileMenus(menus)
-    }
+    return this.initializeMobileMenus(menus)
   }
 
   async initializeMobileMenus(menus) {

@@ -46,7 +46,7 @@ await menu.init()
 
 // Or with custom configuration
 const menu = new Menubar({
-  menuSelector: '.my-menu',
+  menuSelector: 'my-menu',
   buttonClass: 'my-button',
   linkClass: 'my-link',
   mobileBreakpoint: 1024,
@@ -58,7 +58,7 @@ await menu.init()
 
 ```javascript
 const customMenu = new Menubar({
-  menuSelector: '.navigation', // Your menu container class
+  menuSelector: 'navigation', // Your menu container class
   buttonClass: 'nav-button', // Your button class
   linkClass: 'nav-link', // Your link class
   itemClass: 'nav-item', // Your menu item class

@@ -86,7 +86,7 @@ describe('Menubar', () => {
   describe('Constructor and Configuration', () => {
     it('should use default configuration when no config provided', () => {
       const menu = new Menubar()
-      expect(menu.config.menuSelector).toBe('.c-menu')
+      expect(menu.config.menuSelector).toBe('c-menu')
       expect(menu.config.buttonClass).toBe('menu__link')
       expect(menu.config.linkClass).toBe('menu__link')
       expect(menu.config.itemClass).toBe('menu__item')
@@ -96,13 +96,13 @@ describe('Menubar', () => {
 
     it('should merge custom config with defaults', () => {
       const customConfig = {
-        menuSelector: '.custom-menu',
+        menuSelector: 'custom-menu',
         mobileBreakpoint: 1024,
         buttonClass: 'custom-button',
       }
       const menu = new Menubar(customConfig)
 
-      expect(menu.config.menuSelector).toBe('.custom-menu')
+      expect(menu.config.menuSelector).toBe('custom-menu')
       expect(menu.config.mobileBreakpoint).toBe(1024)
       expect(menu.config.buttonClass).toBe('custom-button')
       expect(menu.config.linkClass).toBe('menu__link') // should retain default
@@ -312,9 +312,9 @@ describe('Menubar', () => {
   describe('Mobile Menu Functionality', () => {
     let menu, mobileButton
 
-    beforeEach(() => {
-      menu = new Menubar({ mobileControlId: 'mobile-toggle', mobileBreakpoint: 768 })
-      menu.init()
+    beforeEach(async () => {
+      menu = new Menubar({ mobileControlId: 'mobile-toggle', mobileBreakpoint: 768, hasMobile: true })
+      await menu.init()
       mobileButton = document.getElementById('mobile-toggle')
     })
 
