@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -17,6 +17,10 @@
         background: #f8f9fa;
         padding: 1rem;
         border-bottom: 1px solid #dee2e6;
+
+        ul:not([data-depth='0']) {
+          position: absolute;
+        }
       }
 
       #mobile-toggle {
@@ -58,7 +62,7 @@
     <button id="mobile-toggle" aria-expanded="false">Menu</button>
 
     <nav class="c-menu">
-      <ul class="menu">
+      <ul class="menu" data-depth="0">
         <li class="menu__item">
           <a href="#home" class="menu__link">Home</a>
         </li>

@@ -29,7 +29,8 @@
       }
 
       /* ── Top-level buttons / links ─────────────────────────── */
-      .c-menu > ul > li > .menu__link {
+      .c-menu > ul > li > .menu__link,
+      .c-menu > ul > li > .menu__button {
         display: inline-flex;
         align-items: center;
         gap: 0.4rem;
@@ -47,14 +48,16 @@
       }
 
       .c-menu > ul > li > .menu__link:hover,
-      .c-menu > ul > li > .menu__link:focus {
+      .c-menu > ul > li > .menu__link:focus,
+      .c-menu > ul > li > .menu__button:hover,
+      .c-menu > ul > li > .menu__button:focus {
         color: #ffffff;
         background: rgba(255, 255, 255, 0.08);
         outline: 2px solid #7cb4f5;
         outline-offset: -2px;
       }
 
-      .c-menu > ul > li > button.menu__link[aria-expanded='true'] {
+      .c-menu > ul > li > button.menu__button[aria-expanded='true'] {
         color: #7cb4f5;
       }
 
@@ -91,22 +94,6 @@
         padding-left: 2.5rem;
       }
 
-      .c-mega-menu__container .menu__link {
-        display: block;
-        padding: 0.45rem 0;
-        color: #333;
-        text-decoration: none;
-        font-size: 0.9rem;
-        transition: color 0.15s;
-      }
-
-      .c-mega-menu__container .menu__link:hover,
-      .c-mega-menu__container .menu__link:focus {
-        color: #0056b3;
-        outline: 2px solid #7cb4f5;
-        outline-offset: 1px;
-      }
-
       /* column heading (span.menu__nolink) */
       .c-mega-menu__container .menu__nolink {
         display: block;
@@ -116,26 +103,21 @@
         font-size: 0.75rem;
         font-weight: 700;
         text-transform: uppercase;
+        text-decoration: none;
         letter-spacing: 0.08em;
         border-bottom: 1px solid #e9ecef;
-        cursor: default;
-      }
-
-      .c-mega-menu__container .menu__nolink.menu__link:hover,
-      .c-mega-menu__container .menu__nolink.menu__link:focus {
-        color: #555;
-        outline: none;
-        text-decoration: none;
+        cursor: initial;
       }
 
       /* Nested ul under a span heading is always visible — it's a category group, not a toggle */
       .c-mega-menu__container .menu__nolink + ul {
         display: block;
-        position: static;
+        border: none;
         box-shadow: none;
-        padding: 0;
         margin: 0;
         min-width: unset;
+        padding: 0;
+        position: static;
       }
 
       /* ── Standard dropdown (non-mega) ─────────────────────── */
@@ -162,14 +144,6 @@
         color: #333;
         text-decoration: none;
         font-size: 0.9rem;
-      }
-
-      li > ul.menu .menu__link:hover,
-      li > ul.menu .menu__link:focus {
-        background: #f0f4ff;
-        color: #0056b3;
-        outline: 2px solid #7cb4f5;
-        outline-offset: -2px;
       }
 
       /* ── Mobile toggle ─────────────────────────────────────── */
@@ -263,17 +237,17 @@
     <!-- ═══════════════════════════════════════════════════════════
          Mega-menu structure
          - Top-level menu item with a mega panel uses:
-             button.menu__link[data-menu-controls="panel-{id}"]
+             button.menu__button[data-menu-controls="panel-{id}"]
              + div.c-mega-menu__container#panel-{id}[data-depth="1"]
                > ul (one per column)
          - Top-level item with a standard dropdown uses:
-             button.menu__link + ul.menu[data-depth="1"]
+             button.menu__button + ul.menu[data-depth="1"]
          ═══════════════════════════════════════════════════════════ -->
     <nav class="c-menu c-mega-menu" data-breakpoint="1024">
       <ul class="menu" data-depth="0">
         <!-- Standard dropdown -->
         <li class="menu__item menu__item--expanded">
-          <button class="menu__link">About</button>
+          <button class="menu__button">About</button>
           <ul class="menu" data-depth="1">
             <li class="menu__item"><a href="#story" class="menu__link">Our Story</a></li>
             <li class="menu__item"><a href="#team" class="menu__link">Our Team</a></li>
@@ -284,7 +258,7 @@
         <!-- Mega-menu panel — two columns -->
         <li class="menu__item menu__item--expanded">
           <button
-            class="menu__link"
+            class="menu__button"
             data-menu-controls="panel-services"
             aria-controls="panel-services"
             aria-haspopup="true"
@@ -324,7 +298,7 @@
         <!-- Mega-menu panel — three columns with nested sub-headings -->
         <li class="menu__item menu__item--expanded">
           <button
-            class="menu__link"
+            class="menu__button"
             data-menu-controls="panel-work"
             aria-controls="panel-work"
             aria-haspopup="true"
@@ -428,7 +402,7 @@
       ;(async () => {
         const menu = new AccessibleMenu.Menubar({
           menuSelector: 'c-menu',
-          buttonClass: 'menu__link',
+          buttonClass: 'menu__button',
           linkClass: 'menu__link',
           itemClass: 'menu__item',
           megaMenuClass: 'c-mega-menu',
