@@ -91,7 +91,7 @@ describe('Menubar', () => {
       expect(menu.config.linkClass).toBe('menu__link')
       expect(menu.config.itemClass).toBe('menu__item')
       expect(menu.config.mobileBreakpoint).toBe(768)
-      expect(menu.config.mobileControlId).toBe('nav-toggle')
+      expect(menu.config.mobileControlId).toBe(null)
     })
 
     it('should merge custom config with defaults', () => {
@@ -403,7 +403,7 @@ describe('Menubar', () => {
     let menu, mobileButton
 
     beforeEach(async () => {
-      menu = new Menubar(document, { mobileControlId: 'mobile-toggle', mobileBreakpoint: 768, hasMobile: true })
+      menu = new Menubar(document, { mobileControlId: 'mobile-toggle', mobileBreakpoint: 768 })
       await menu.init()
       mobileButton = document.getElementById('mobile-toggle')
     })

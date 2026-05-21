@@ -19,10 +19,8 @@ export interface MenuConfig {
   controllerClass?: string
   /** Mobile breakpoint in pixels */
   mobileBreakpoint?: number
-  /** ID of the mobile menu control button */
+  /** ID of the mobile menu control button. When set, mobile controls are initialized. */
   mobileControlId?: string | null
-  /** Boolean for if mobile menus should be initialized */
-  hasMobile?: boolean
   /** Data attribute for plugin ID */
   dataPluginIdAttribute?: string
 }

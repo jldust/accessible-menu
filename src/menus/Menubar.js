@@ -34,8 +34,7 @@ const DEFAULT_CONFIG = {
   controllerTags: ['button', 'span'],
   controllerClass: 'controller',
   mobileBreakpoint: 768,
-  mobileControlId: 'nav-toggle',
-  hasMobile: false,
+  mobileControlId: null,
   dataPluginIdAttribute: 'data-plugin-id',
 }
 
@@ -58,8 +57,7 @@ export class Menubar {
    * @param {string[]} config.controllerTags - Array of HTML tag names that can act as menu controllers
    * @param {string} config.controllerClass - CSS class added to controller elements
    * @param {number} config.mobileBreakpoint - Mobile breakpoint in pixels
-   * @param {string} config.mobileControlId - ID of the mobile menu control button
-   * @param {boolean} config.hasMobile - Boolean for if mobile menus should be initialized
+   * @param {string} config.mobileControlId - ID of the mobile menu control button. When set, mobile controls are initialized.
    */
   constructor(context = document, config = {}) {
     // Allow calling as new Menubar(config) without an explicit context
@@ -84,8 +82,8 @@ export class Menubar {
     this.attachAriaControls(this.context)
     this.attachMenuControls(this.context)
 
-    // Only attach mobile controls if hasMobile is true
-    if (this.config.hasMobile) {
+    // Only attach mobile controls if a mobileControlId is provided
+    if (this.config.mobileControlId) {
       await this.attachMobileControls()
     }
   }
@@ -185,9 +183,9 @@ export class Menubar {
    * Attach mobile menu controls
    */
   async attachMobileControls() {
-    const { hasMobile, mobileControlId } = this.config
+    const { mobileControlId } = this.config
 
-    if (!mobileControlId || !hasMobile) return
+    if (!mobileControlId) return
 
     // Only initialize mobile for menus owned by this instance, with deduplication
     const menus = [...this.menuInstances.keys()].filter(menu => {
