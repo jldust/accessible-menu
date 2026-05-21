@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accessible Mega Menu Example</title>
+    <link rel="stylesheet" href="../src/menu-styles.css" />
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* ── Top-level nav bar ─────────────────────────────────── */
+      .c-menu {
+        background: #1a1a2e;
+        padding: 0 1.5rem;
+        position: relative;
+        z-index: 100;
+      }
+
+      .c-menu > ul {
+        display: flex;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        gap: 0.25rem;
+      }
+
+      /* ── Top-level buttons / links ─────────────────────────── */
+      .c-menu > ul > li > .menu__link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 1rem 1.25rem;
+        color: #e0e0e0;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition:
+          color 0.2s,
+          background 0.2s;
+      }
+
+      .c-menu > ul > li > .menu__link:hover,
+      .c-menu > ul > li > .menu__link:focus {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.08);
+        outline: 2px solid #7cb4f5;
+        outline-offset: -2px;
+      }
+
+      .c-menu > ul > li > button.menu__link[aria-expanded='true'] {
+        color: #7cb4f5;
+      }
+
+      /* ── Mega-menu panel ───────────────────────────────────── */
+      .c-mega-menu__container {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+        border-top: 3px solid #7cb4f5;
+        padding: 2rem 2.5rem;
+        z-index: 200;
+      }
+
+      .c-mega-menu__container[aria-hidden='false'],
+      button[aria-expanded='true'] + .c-mega-menu__container {
+        display: flex;
+        gap: 2.5rem;
+      }
+
+      /* ── Links inside the panel ────────────────────────────── */
+      .c-mega-menu__container ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        min-width: 180px;
+      }
+
+      .c-mega-menu__container ul + ul {
+        border-left: 1px solid #e9ecef;
+        padding-left: 2.5rem;
+      }
+
+      .c-mega-menu__container .menu__link {
+        display: block;
+        padding: 0.45rem 0;
+        color: #333;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.15s;
+      }
+
+      .c-mega-menu__container .menu__link:hover,
+      .c-mega-menu__container .menu__link:focus {
+        color: #0056b3;
+        outline: 2px solid #7cb4f5;
+        outline-offset: 1px;
+      }
+
+      /* column heading (span.menu__nolink) */
+      .c-mega-menu__container .menu__nolink {
+        display: block;
+        padding: 0 0 0.5rem;
+        margin-bottom: 0.5rem;
+        color: #555;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        border-bottom: 1px solid #e9ecef;
+        cursor: default;
+      }
+
+      .c-mega-menu__container .menu__nolink.menu__link:hover,
+      .c-mega-menu__container .menu__nolink.menu__link:focus {
+        color: #555;
+        outline: none;
+        text-decoration: none;
+      }
+
+      /* Nested ul under a span heading is always visible — it's a category group, not a toggle */
+      .c-mega-menu__container .menu__nolink + ul {
+        display: block;
+        position: static;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+        min-width: unset;
+      }
+
+      /* ── Standard dropdown (non-mega) ─────────────────────── */
+      li > ul.menu {
+        display: none;
+        position: absolute;
+        background: #ffffff;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        list-style: none;
+        margin: 0;
+        padding: 0.5rem 0;
+        min-width: 200px;
+        z-index: 200;
+      }
+
+      button[aria-expanded='true'] + ul.menu {
+        display: block;
+        position: absolute;
+      }
+
+      li > ul.menu .menu__link {
+        display: block;
+        padding: 0.6rem 1.25rem;
+        color: #333;
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+
+      li > ul.menu .menu__link:hover,
+      li > ul.menu .menu__link:focus {
+        background: #f0f4ff;
+        color: #0056b3;
+        outline: 2px solid #7cb4f5;
+        outline-offset: -2px;
+      }
+
+      /* ── Mobile toggle ─────────────────────────────────────── */
+      #mobile-toggle {
+        display: none;
+        padding: 0.85rem 1.25rem;
+        background: #16213e;
+        color: #e0e0e0;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        width: 100%;
+        text-align: left;
+      }
+
+      @media (max-width: 1023px) {
+        #mobile-toggle {
+          display: block;
+        }
+
+        .c-menu > ul {
+          flex-direction: column;
+        }
+
+        .c-mega-menu__container {
+          position: static;
+          flex-direction: column;
+          border-top: none;
+          box-shadow: none;
+          padding: 0.5rem 1rem 1rem 2rem;
+        }
+
+        .c-mega-menu__container ul + ul {
+          border-left: none;
+          padding-left: 0;
+          border-top: 1px solid #e9ecef;
+          padding-top: 0.5rem;
+          margin-top: 0.5rem;
+        }
+      }
+
+      /* ── Page body ─────────────────────────────────────────── */
+      main {
+        padding: 3rem 2rem;
+        max-width: 860px;
+        margin: 0 auto;
+      }
+
+      .keyboard-ref {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 1.25rem 1.5rem;
+        margin-top: 2rem;
+      }
+
+      .keyboard-ref h2 {
+        margin-top: 0;
+      }
+
+      .keyboard-ref table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      .keyboard-ref td,
+      .keyboard-ref th {
+        padding: 0.4rem 0.75rem;
+        border: 1px solid #dee2e6;
+        font-size: 0.9rem;
+      }
+
+      .keyboard-ref th {
+        background: #e9ecef;
+      }
+
+      kbd {
+        display: inline-block;
+        padding: 0.1em 0.4em;
+        background: #eee;
+        border: 1px solid #bbb;
+        border-radius: 3px;
+        font-size: 0.85em;
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="mobile-toggle" aria-expanded="false">&#9776; Menu</button>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         Mega-menu structure
+         - Top-level menu item with a mega panel uses:
+             button.menu__link[data-menu-controls="panel-{id}"]
+             + div.c-mega-menu__container#panel-{id}[data-depth="1"]
+               > ul (one per column)
+         - Top-level item with a standard dropdown uses:
+             button.menu__link + ul.menu[data-depth="1"]
+         ═══════════════════════════════════════════════════════════ -->
+    <nav class="c-menu c-mega-menu" data-breakpoint="1024">
+      <ul class="menu" data-depth="0">
+        <!-- Standard dropdown -->
+        <li class="menu__item menu__item--expanded">
+          <button class="menu__link">About</button>
+          <ul class="menu" data-depth="1">
+            <li class="menu__item"><a href="#story" class="menu__link">Our Story</a></li>
+            <li class="menu__item"><a href="#team" class="menu__link">Our Team</a></li>
+            <li class="menu__item"><a href="#careers" class="menu__link">Careers</a></li>
+          </ul>
+        </li>
+
+        <!-- Mega-menu panel — two columns -->
+        <li class="menu__item menu__item--expanded">
+          <button
+            class="menu__link"
+            data-menu-controls="panel-services"
+            aria-controls="panel-services"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            Services
+          </button>
+          <div class="c-mega-menu__container" id="panel-services" data-depth="1">
+            <!-- Column 1 -->
+            <ul class="menu" data-depth="1">
+              <li class="menu__item"><a href="#research" class="menu__link">Research</a></li>
+              <li class="menu__item"><a href="#consulting" class="menu__link">Consulting</a></li>
+
+              <li class="menu__item menu__item--expanded">
+                <span class="menu__link menu__nolink menu__label">Strategy</span>
+                <ul class="menu menu--main c-menu__list" data-depth="2">
+                  <li class="menu__item"><a href="#research" class="menu__link">Research</a></li>
+                  <li class="menu__item"><a href="#consulting" class="menu__link">Consulting</a></li>
+                  <li class="menu__item"><a href="#planning" class="menu__link">Planning</a></li>
+                </ul>
+              </li>
+            </ul>
+            <!-- Column 2 -->
+            <ul class="menu" data-depth="1">
+              <li class="menu__item menu__item--expanded">
+                <span class="menu__link menu__nolink menu__label">Delivery</span>
+                <ul class="menu menu--main c-menu__list" data-depth="2">
+                  <li class="menu__item"><a href="#design" class="menu__link">Web Design</a></li>
+                  <li class="menu__item"><a href="#development" class="menu__link">Development</a></li>
+                  <li class="menu__item"><a href="#accessibility" class="menu__link">Accessibility</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </li>
+
+        <!-- Mega-menu panel — three columns with nested sub-headings -->
+        <li class="menu__item menu__item--expanded">
+          <button
+            class="menu__link"
+            data-menu-controls="panel-work"
+            aria-controls="panel-work"
+            aria-haspopup="true"
+            aria-expanded="false"
+          >
+            Our Work
+          </button>
+          <div class="c-mega-menu__container" id="panel-work" data-depth="1">
+            <!-- Column 1 -->
+            <ul class="menu" data-depth="1">
+              <li class="menu__item menu__item--expanded">
+                <span class="menu__link menu__nolink menu__label">Impact Areas</span>
+                <ul class="menu menu--main c-menu__list" data-depth="2">
+                  <li class="menu__item"><a href="#emissions" class="menu__link">Reducing Emissions</a></li>
+                  <li class="menu__item"><a href="#transition" class="menu__link">Just Transition</a></li>
+                  <li class="menu__item"><a href="#global" class="menu__link">Global Leadership</a></li>
+                </ul>
+              </li>
+            </ul>
+            <!-- Column 2 -->
+            <ul class="menu" data-depth="1">
+              <li class="menu__item menu__item--expanded">
+                <span class="menu__link menu__nolink menu__label">News</span>
+                <ul class="menu menu--main c-menu__list" data-depth="2">
+                  <li class="menu__item"><a href="#press" class="menu__link">Press Releases</a></li>
+                  <li class="menu__item"><a href="#latest" class="menu__link">The Latest</a></li>
+                  <li class="menu__item"><a href="#videos" class="menu__link">Videos</a></li>
+                </ul>
+              </li>
+            </ul>
+            <!-- Column 3 -->
+            <ul class="menu" data-depth="1">
+              <li class="menu__item menu__item--expanded">
+                <span class="menu__link menu__nolink menu__label">Resources</span>
+                <ul class="menu menu--main c-menu__list" data-depth="2">
+                  <li class="menu__item"><a href="#reports" class="menu__link">Reports</a></li>
+                  <li class="menu__item"><a href="#data" class="menu__link">Data &amp; Tools</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </li>
+
+        <!-- Plain link — no submenu -->
+        <li class="menu__item">
+          <a href="#contact" class="menu__link">Contact</a>
+        </li>
+      </ul>
+    </nav>
+
+    <main>
+      <h1>Mega Menu — Keyboard Navigation Demo</h1>
+      <p>
+        This example demonstrates the accessible mega-menu component. The
+        <em>Services</em> and <em>Our Work</em> top-level items open <code>div.c-mega-menu__container</code> panels
+        containing multiple columns of links. The <em>About</em> item uses a standard dropdown <code>ul</code> for
+        comparison.
+      </p>
+
+      <div class="keyboard-ref">
+        <h2>Keyboard Reference</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Behaviour</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>Tab</kbd> / <kbd>Shift+Tab</kbd></td>
+              <td>Move between top-level items; Shift+Tab from first panel link closes panel</td>
+            </tr>
+            <tr>
+              <td><kbd>↓</kbd> on top button</td>
+              <td>Open panel and focus first link</td>
+            </tr>
+            <tr>
+              <td><kbd>↑</kbd> / <kbd>↓</kbd> inside panel</td>
+              <td>Move between links within the panel</td>
+            </tr>
+            <tr>
+              <td><kbd>←</kbd> / <kbd>→</kbd> inside panel</td>
+              <td>Jump to previous / next top-level button</td>
+            </tr>
+            <tr>
+              <td><kbd>Escape</kbd> inside panel</td>
+              <td>Close panel, return focus to controlling button</td>
+            </tr>
+            <tr>
+              <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+              <td>Toggle panel open/closed</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <script src="../dist/index.umd.js"></script>
+    <script>
+      ;(async () => {
+        const menu = new AccessibleMenu.Menubar({
+          menuSelector: 'c-menu',
+          buttonClass: 'menu__link',
+          linkClass: 'menu__link',
+          itemClass: 'menu__item',
+          megaMenuClass: 'c-mega-menu',
+          megaMenuContainerClass: 'c-mega-menu__container',
+          controllerTags: ['button'],
+          mobileBreakpoint: 1024,
+          mobileControlId: 'mobile-toggle',
+        })
+        await menu.init()
+      })()
+    </script>
+  </body>
+</html>

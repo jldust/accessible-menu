@@ -21,6 +21,7 @@
 /* Desktop layout for top-level menu */
 @media (min-width: 769px) {
   .c-menu ul[data-depth='0'] {
+    align-items: center;
     display: flex;
     flex-direction: row;
     gap: 1.5rem; /* 24px */
@@ -102,7 +103,10 @@ ul.menu .controller[aria-expanded='false'] + *:not([data-depth='0']) {
   opacity: 0;
   overflow: hidden;
   transform: translateY(-10px);
-  transition: max-height 0.25s ease-in-out, opacity 0.25s ease-in-out, transform 0.25s ease-in-out,
+  transition:
+    max-height 0.25s ease-in-out,
+    opacity 0.25s ease-in-out,
+    transform 0.25s ease-in-out,
     visibility 0.25s ease-in;
   visibility: hidden;
   z-index: 1;
@@ -114,7 +118,10 @@ ul.menu .controller[aria-expanded='true'] + *:not([data-depth='0']) {
   max-height: 1000px;
   opacity: 1;
   transform: translateY(0);
-  transition: max-height 0.25s ease-in-out, opacity 0.25s ease-in-out, transform 0.25s ease-in-out,
+  transition:
+    max-height 0.25s ease-in-out,
+    opacity 0.25s ease-in-out,
+    transform 0.25s ease-in-out,
     visibility 0.25s ease-in;
   visibility: visible;
   z-index: 10;
@@ -151,7 +158,9 @@ ul.menu .controller[aria-expanded='true'] + *:not([data-depth='0']) {
     opacity: 0;
     top: 100%;
     transform: translate3d(100%, 0, 0);
-    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    transition:
+      transform 0.3s ease-in-out,
+      opacity 0.3s ease-in-out;
     width: 100%;
   }
 
@@ -213,6 +222,7 @@ ul.menu .controller[aria-expanded='true'] + *:not([data-depth='0']) {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   min-width: 200px;
   padding: 0.5rem 0;
+  position: static;
 }
 
 @media (max-width: 768px) {

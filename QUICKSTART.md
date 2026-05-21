@@ -77,5 +77,3 @@ These are controlled by the library and attached when the releative variables ex
 - `data-depth` - Depth level for nested menus (1, 2, 3, etc.)
 - `data-breakpoint` - Custom mobile breakpoint (optional)
 - `data-mobile` - Reference to mobile toggle button ID (optional)
-
-That's it! Your accessible menu is now ready with full keyboard navigation, mobile support, and ARIA compliance.

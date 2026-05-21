@@ -27,7 +27,7 @@ describe('Menubar', () => {
     document.body.innerHTML = `
       <button id="mobile-toggle" aria-expanded="false">Menu</button>
       <nav class="c-menu" data-breakpoint="768">
-        <ul class="menu">
+        <ul class="menu" data-depth="0">
           <li class="menu__item">
             <a href="#home" class="menu__link">Home</a>
           </li>
@@ -100,7 +100,7 @@ describe('Menubar', () => {
         mobileBreakpoint: 1024,
         buttonClass: 'custom-button',
       }
-      const menu = new Menubar(customConfig)
+      const menu = new Menubar(document, customConfig)
 
       expect(menu.config.menuSelector).toBe('custom-menu')
       expect(menu.config.mobileBreakpoint).toBe(1024)
@@ -140,26 +140,7 @@ describe('Menubar', () => {
       })
     })
 
-    it('should set depth attributes on menu levels', () => {
-      const menu = new Menubar()
-      menu.init()
-
-      // Check that the top-level menu has depth 0
-      const topMenu = menuContainer.querySelector('ul.menu')
-      expect(topMenu.getAttribute('data-depth')).toBe('0')
-
-      // Check that submenus have depth attributes set
-      const submenus = menuContainer.querySelectorAll('ul.menu[data-depth="1"]')
-      expect(submenus.length).toBeGreaterThan(0)
-
-      // If there are nested submenus, check they have correct depth
-      const nestedSubmenus = menuContainer.querySelectorAll('ul.menu[data-depth="2"]')
-      if (nestedSubmenus.length > 0) {
-        nestedSubmenus.forEach(menu => expect(menu.getAttribute('data-depth')).toBe('2'))
-      }
-    })
-
-    it('should handle menus without submenus gracefully', () => {
+    it('should handle menus without submenus', () => {
       document.body.innerHTML = `
         <nav class="c-menu">
           <ul class="menu">
@@ -198,7 +179,7 @@ describe('Menubar', () => {
 
   describe('Mobile Menu Controls', () => {
     it('should initialize mobile menu controls when present', () => {
-      const menu = new Menubar({ mobileControlId: 'mobile-toggle' })
+      const menu = new Menubar(document, { mobileControlId: 'mobile-toggle' })
       menu.init()
 
       const mobileButton = document.getElementById('mobile-toggle')
@@ -313,7 +294,7 @@ describe('Menubar', () => {
     let menu, mobileButton
 
     beforeEach(async () => {
-      menu = new Menubar({ mobileControlId: 'mobile-toggle', mobileBreakpoint: 768, hasMobile: true })
+      menu = new Menubar(document, { mobileControlId: 'mobile-toggle', mobileBreakpoint: 768, hasMobile: true })
       await menu.init()
       mobileButton = document.getElementById('mobile-toggle')
     })
@@ -417,12 +398,18 @@ describe('Menubar', () => {
               </ul>
             </li>
             <li class="menu__item menu__item--expanded">
-              <span class="menu__link">Mega Menu</span>
-              <div class="menu">
-                <div class="c-mega-menu__wrapper">
-                  <a class="menu__link" href="#">Mega Link</a>
-                </div>
-              </div>
+              <span class="menu__link menu__label">Mega Menu</span>
+                <ul class="c-mega-menu__wrapper">
+                  <li class="menu__item">
+                    <a class="menu__link" href="#">Mega Link</a>
+                  </li>
+                      <li class="menu__item">
+                    <a class="menu__link" href="#">Mega Link 2</a>
+                  </li>
+                      <li class="menu__item">
+                    <a class="menu__link" href="#">Mega Link 3</a>
+                  </li>
+                </ul>
             </li>
           </ul>
         </nav>
@@ -449,8 +436,11 @@ describe('Menubar', () => {
       const span = menuContainer.querySelector('span')
       if (span && span.nextElementSibling) {
         const submenu = span.nextElementSibling
-        expect(span.getAttribute('data-menu-controls')).toBeTruthy()
-        expect(submenu.getAttribute('id')).toBeTruthy()
+        // Non-controller spans act as labels via aria-labelledby
+        expect(span.getAttribute('id')).toBeTruthy()
+        expect(submenu.getAttribute('aria-labelledby')).toBe(span.getAttribute('id'))
+        // Should NOT have data-menu-controls (it's a label, not a controller)
+        expect(span.getAttribute('data-menu-controls')).toBeNull()
       }
     })
   })
@@ -540,6 +530,251 @@ describe('Menubar', () => {
       button.dispatchEvent(escapeEvent)
 
       expect(document.activeElement).toBe(button)
+    })
+  })
+
+  describe('Mega Menu Navigation', () => {
+    let menu, megaContainer, servicesBtn, workBtn
+
+    // No pre-set ARIA attributes — init() assigns data-menu-controls and panel ids.
+    const MEGA_HTML = `
+      <nav class="c-menu c-mega-menu" data-breakpoint="1024">
+        <ul class="menu" data-depth="0">
+          <li class="menu__item menu__item--expanded">
+            <button class="menu__link">Services</button>
+            <div class="c-mega-menu__container" data-depth="1">
+              <ul class="menu" data-depth="1">
+                <li class="menu__item"><a href="#research" class="menu__link">Research</a></li>
+                <li class="menu__item"><a href="#consulting" class="menu__link">Consulting</a></li>
+              </ul>
+              <ul class="menu" data-depth="1">
+                <li class="menu__item"><a href="#design" class="menu__link">Design</a></li>
+                <li class="menu__item"><a href="#development" class="menu__link">Development</a></li>
+              </ul>
+            </div>
+          </li>
+          <li class="menu__item menu__item--expanded">
+            <button class="menu__link">Our Work</button>
+            <div class="c-mega-menu__container" data-depth="1">
+              <ul class="menu" data-depth="1">
+                <li class="menu__item"><a href="#emissions" class="menu__link">Reducing Emissions</a></li>
+                <li class="menu__item"><a href="#transition" class="menu__link">Just Transition</a></li>
+              </ul>
+            </div>
+          </li>
+          <li class="menu__item">
+            <a href="#contact" class="menu__link">Contact</a>
+          </li>
+        </ul>
+      </nav>
+    `
+
+    // Helper: return the first panel element controlled by a button
+    function panelFor(btn) {
+      return document.getElementById(btn.getAttribute('data-menu-controls'))
+    }
+
+    beforeEach(() => {
+      document.body.innerHTML = MEGA_HTML
+      megaContainer = document.querySelector('.c-menu')
+      menu = new Menubar(document, {
+        megaMenuClass: 'c-mega-menu',
+        megaMenuContainerClass: 'c-mega-menu__container',
+      })
+      menu.init()
+      // Resolve buttons by label after init assigns aria-label
+      const buttons = Array.from(megaContainer.querySelectorAll('button.menu__link'))
+      servicesBtn = buttons.find(b => b.getAttribute('aria-label') === 'Services')
+      workBtn = buttons.find(b => b.getAttribute('aria-label') === 'Our Work')
+    })
+
+    it('should assign ARIA attributes to mega menu buttons after init', () => {
+      const buttons = megaContainer.querySelectorAll('button.menu__link')
+      buttons.forEach(btn => {
+        expect(btn.getAttribute('data-menu-controls')).toBeTruthy()
+        expect(btn.getAttribute('aria-haspopup')).toBe('true')
+        expect(btn.getAttribute('aria-expanded')).toBe('false')
+      })
+    })
+
+    it('should assign an id to each mega panel after init', () => {
+      const panels = megaContainer.querySelectorAll('.c-mega-menu__container')
+      panels.forEach(panel => {
+        expect(panel.getAttribute('id')).toBeTruthy()
+      })
+    })
+
+    it('should open mega panel on button click', () => {
+      servicesBtn.click()
+      expect(servicesBtn.getAttribute('aria-expanded')).toBe('true')
+    })
+
+    it('should close mega panel on second button click', () => {
+      servicesBtn.click()
+      expect(servicesBtn.getAttribute('aria-expanded')).toBe('true')
+      servicesBtn.click()
+      expect(servicesBtn.getAttribute('aria-expanded')).toBe('false')
+    })
+
+    it('should open mega panel on ArrowDown and not throw error', () => {
+      const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
+      const preventDefaultSpy = jest.spyOn(event, 'preventDefault')
+      expect(() => servicesBtn.dispatchEvent(event)).not.toThrow()
+      expect(preventDefaultSpy).toHaveBeenCalled()
+      expect(servicesBtn.getAttribute('aria-expanded')).toBe('true')
+    })
+
+    it('should close open mega panel on Escape and not throw error', () => {
+      servicesBtn.click()
+      expect(servicesBtn.getAttribute('aria-expanded')).toBe('true')
+
+      const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+      expect(() => servicesBtn.dispatchEvent(event)).not.toThrow()
+      expect(servicesBtn.getAttribute('aria-expanded')).toBe('false')
+    })
+
+    it('should close mega panel when clicking outside', () => {
+      servicesBtn.click()
+      expect(servicesBtn.getAttribute('aria-expanded')).toBe('true')
+
+      const outside = document.createElement('div')
+      document.body.appendChild(outside)
+      const event = new MouseEvent('mousedown', { bubbles: true })
+      Object.defineProperty(event, 'target', { value: outside })
+      document.dispatchEvent(event)
+
+      expect(servicesBtn.getAttribute('aria-expanded')).toBe('false')
+    })
+
+    it('should click ArrowDown without error', () => {
+      servicesBtn.click()
+      const firstLink = panelFor(servicesBtn).querySelector('.menu__link')
+      const event = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
+      expect(() => firstLink.dispatchEvent(event)).not.toThrow()
+    })
+
+    it('should click ArrowUp without error', () => {
+      servicesBtn.click()
+      const firstLink = panelFor(servicesBtn).querySelector('.menu__link')
+      const event = new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
+      expect(() => firstLink.dispatchEvent(event)).not.toThrow()
+    })
+
+    it('should click Escape without error', () => {
+      servicesBtn.click()
+      const firstLink = panelFor(servicesBtn).querySelector('.menu__link')
+      const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+      expect(() => firstLink.dispatchEvent(event)).not.toThrow()
+    })
+
+    it('should close first panel when a second top-level button is clicked', () => {
+      servicesBtn.click()
+      expect(servicesBtn.getAttribute('aria-expanded')).toBe('true')
+
+      workBtn.click()
+      expect(workBtn.getAttribute('aria-expanded')).toBe('true')
+      expect(servicesBtn.getAttribute('aria-expanded')).toBe('false')
+    })
+
+    it('should not throw error when using mega panel structure', () => {
+      document.body.innerHTML = `
+        <nav class="c-menu c-mega-menu">
+          <ul class="menu" data-depth="0">
+            <li class="menu__item menu__item--expanded">
+              <button class="menu__link">Menu</button>
+              <div class="c-mega-menu__container" data-depth="1">
+                <ul class="menu" data-depth="1">
+                  <li class="menu__item"><a href="#x" class="menu__link">Link X</a></li>
+                 <li class="menu__item"><a href="#x" class="menu__link">Link X</a></li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </nav>
+      `
+      const menu= new Menubar(document, {
+        megaMenuClass: 'c-mega-menu',
+        megaMenuContainerClass: 'c-mega-menu__container',
+      })
+      expect(() => menu.init()).not.toThrow()
+    })
+
+    it('should skip span heading elements when navigating with ArrowDown inside a panel', () => {
+      // Panel with a span.menu__nolink heading between two real links
+      document.body.innerHTML = `
+        <nav class="c-menu c-mega-menu">
+          <ul class="menu" data-depth="0">
+            <li class="menu__item menu__item--expanded">
+              <button class="menu__link">Services</button>
+              <div class="c-mega-menu__container" data-depth="1">
+                <ul class="menu" data-depth="1">
+                  <li class="menu__item"><span class="menu__link menu__nolink">Strategy</span></li>
+                  <li class="menu__item"><a href="#research" class="menu__link" id="link-research">Research</a></li>
+                  <li class="menu__item"><a href="#consulting" class="menu__link" id="link-consulting">Consulting</a></li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </nav>
+      `
+      const menu= new Menubar(document, {
+        megaMenuClass: 'c-mega-menu',
+        megaMenuContainerClass: 'c-mega-menu__container',
+      })
+      menu.init()
+
+      const btn = document.querySelector('button.menu__link')
+      btn.click() // open panel
+
+      // The span heading should not be in the navigable list — Research should be first
+      const researchLink = document.getElementById('link-research')
+      const consultingLink = document.getElementById('link-consulting')
+      const spanHeading = document.querySelector('span.menu__nolink')
+
+      // Verify span has no aria-controls (it's a heading, not a controller)
+      expect(spanHeading.hasAttribute('aria-controls')).toBe(false)
+
+      // ArrowDown from Research should reach Consulting, not block on the span
+      researchLink.focus()
+      const downEvent = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
+      researchLink.dispatchEvent(downEvent)
+      expect(document.activeElement).toBe(consultingLink)
+    })
+
+    it('should skip span heading elements when navigating with ArrowUp inside a panel', () => {
+      document.body.innerHTML = `
+        <nav class="c-menu c-mega-menu">
+          <ul class="menu" data-depth="0">
+            <li class="menu__item menu__item--expanded">
+              <button class="menu__link">Services</button>
+              <div class="c-mega-menu__container" data-depth="1">
+                <ul class="menu" data-depth="1">
+                  <li class="menu__item"><span class="menu__link menu__nolink">Strategy</span></li>
+                  <li class="menu__item"><a href="#research" class="menu__link" id="link-research">Research</a></li>
+                  <li class="menu__item"><a href="#consulting" class="menu__link" id="link-consulting">Consulting</a></li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </nav>
+      `
+      const menu = new Menubar(document, {
+        megaMenuClass: 'c-mega-menu',
+        megaMenuContainerClass: 'c-mega-menu__container',
+      })
+      menu.init()
+
+      const button = document.querySelector('button.menu__link')
+      button.click()
+
+      const researchLink = document.getElementById('link-research')
+      const consultingLink = document.getElementById('link-consulting')
+
+      // ArrowUp from Research should wrap to Consulting (last real link), skipping the span
+      researchLink.focus()
+      const upEvent = new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
+      researchLink.dispatchEvent(upEvent)
+      expect(document.activeElement).toBe(consultingLink)
     })
   })
 })

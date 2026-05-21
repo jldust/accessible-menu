@@ -5,8 +5,10 @@
  * @param {HTMLElement|Document} context - Context to search within
  * @returns {HTMLElement[]} - Array of elements that haven't been initialized yet
  */
+let _menuIdCounter = 0
+
 function once(id, selector, context = document) {
-  const elements = Array.from(context.querySelectorAll(selector))
+  const elements = typeof context.matches === 'function' ? [context] : Array.from(context.querySelectorAll(selector))
   const dataAttribute = `data-once-${id}`
 
   return elements.filter(element => {
@@ -22,11 +24,13 @@ function once(id, selector, context = document) {
  * Default configuration for the accessible menu
  */
 const DEFAULT_CONFIG = {
-  menuSelector: '.c-menu',
+  menuSelector: 'c-menu',
   buttonClass: 'menu__link',
   linkClass: 'menu__link',
+  labelClass: 'menu__label',
   itemClass: 'menu__item',
   megaMenuClass: 'c-mega-menu',
+  megaMenuContainerClass: 'c-mega-menu__container',
   controllerTags: ['button', 'span'],
   controllerClass: 'controller',
   mobileBreakpoint: 768,
@@ -43,10 +47,12 @@ const DEFAULT_CONFIG = {
 export class Menubar {
   /**
    * Create an Menubar instance
+   * @param {HTMLElement|Document} context - The root element or document to scope this instance to
    * @param {Object} config - Configuration options
    * @param {string} config.menuSelector - CSS selector for menu containers
    * @param {string} config.buttonClass - CSS class for menu buttons
    * @param {string} config.linkClass - CSS class for menu links
+   * @param {string} config.labelClass - CSS class that marks a span as a visual label (aria-labelledby) rather than a toggle controller
    * @param {string} config.itemClass - CSS class for menu items
    * @param {string} config.megaMenuClass - CSS class for mega menu wrapper
    * @param {string[]} config.controllerTags - Array of HTML tag names that can act as menu controllers
@@ -55,18 +61,28 @@ export class Menubar {
    * @param {string} config.mobileControlId - ID of the mobile menu control button
    * @param {boolean} config.hasMobile - Boolean for if mobile menus should be initialized
    */
-  constructor(config = {}) {
+  constructor(context = document, config = {}) {
+    // Allow calling as new Menubar(config) without an explicit context
+    if (context !== null && typeof context === 'object' && !(context instanceof Node)) {
+      config = context
+      context = document
+    }
+    this.context = context
     this.config = { ...DEFAULT_CONFIG, ...config }
     this.menuInstances = new Map()
   }
 
   /**
    * Initialize all menus on the page
-   * @param {HTMLElement|Document} context - The context to search for menus
    */
-  async init(context = document) {
-    this.attachAriaControls(context)
-    this.attachMenuControls(context)
+  async init() {
+    if (arguments.length > 0) {
+      console.warn(
+        'Menubar.init() does not accept arguments. Pass the context element to the Menubar constructor instead: new Menubar(element, config)',
+      )
+    }
+    this.attachAriaControls(this.context)
+    this.attachMenuControls(this.context)
 
     // Only attach mobile controls if hasMobile is true
     if (this.config.hasMobile) {
@@ -82,48 +98,17 @@ export class Menubar {
     const menus = once('ariaControls', `.${this.config.menuSelector}`, context)
 
     menus.forEach(menu => {
-      // Set depth attributes for all menu levels
-      this.setMenuDepthAttributes(menu)
-
       // Find all controller elements (buttons, spans, etc.)
       const controllerSelectors = this.config.controllerTags
         .map(tag => `:scope ${tag}.${this.config.buttonClass}`)
         .join(', ')
-      const controllers = menu.querySelectorAll(controllerSelectors)
-
+      // Find label spans explicitly — they may not carry buttonClass
+      const controllers = new Set([
+        ...menu.querySelectorAll(controllerSelectors),
+        ...menu.querySelectorAll(`:scope span.${this.config.labelClass}`),
+      ])
       // Attach controls to all controller elements
       this.attachControlsToElements([...controllers])
-    })
-  }
-
-  /**
-   * Set depth attributes for all menu levels
-   * @param {HTMLElement} menuContainer - The main menu container
-   */
-  setMenuDepthAttributes(menuContainer) {
-    // Find the top-level menu (direct child ul of the menu container)
-    const topLevelMenu = menuContainer.querySelector(':scope > .menu, :scope > ul')
-
-    if (topLevelMenu) {
-      this.setDepthRecursively(topLevelMenu, 0)
-    }
-  }
-
-  /**
-   * Recursively set data-depth attributes for menu levels
-   * @param {HTMLElement} menuElement - The menu ul element
-   * @param {number} depth - The current depth level
-   */
-  setDepthRecursively(menuElement, depth) {
-    // Set the data-depth attribute on the current menu level
-    menuElement.setAttribute('data-depth', depth.toString())
-
-    // Find all submenu ul elements that are direct children of menu items
-    const submenus = menuElement.querySelectorAll(':scope > .menu__item > .menu, :scope > .menu__item > ul')
-
-    // Recursively set depth for each submenu
-    submenus.forEach(submenu => {
-      this.setDepthRecursively(submenu, depth + 1)
     })
   }
 
@@ -146,14 +131,21 @@ export class Menubar {
 
       // Generate unique ID if not present for controls
       if (!id) {
-        const random = Math.floor(Math.random() * 10000)
-        id = `menu-${random}`
+        id = `menu-${++_menuIdCounter}`
         element.setAttribute(this.config.dataPluginIdAttribute, id)
       }
 
       const submenu = element.nextElementSibling
+      const isLabelSpan = element.classList.contains(this.config.labelClass)
 
-      if (this.isController(element)) {
+      if (isLabelSpan) {
+        // Non-controller span: visual label for an always-visible list, regardless of controllerTags
+        if (submenu) {
+          const labelId = `label-${id}`
+          element.setAttribute('id', labelId)
+          submenu.setAttribute('aria-labelledby', labelId)
+        }
+      } else if (this.isController(element)) {
         element.setAttribute('aria-haspopup', 'true')
         if (submenu) {
           const submenuId = `panel-${id}`
@@ -181,7 +173,7 @@ export class Menubar {
    * @param {HTMLElement|Document} context - The context to search for menus
    */
   attachMenuControls(context) {
-    const menus = once('menuControl', this.config.menuSelector, context)
+    const menus = once('menuControl', `.${this.config.menuSelector}`, context)
 
     menus.forEach(menuContainer => {
       const menuInstance = new MenuController(menuContainer, this.config)
@@ -263,15 +255,16 @@ class MenuController {
     const controllerSelectors = this.config.controllerTags.map(tag => `${tag}.${this.config.buttonClass}`).join(', ')
 
     // Initialize MenuButton for each controller in the menuContainer
+    this.menuButtons = []
     this.menuContainer.querySelectorAll(controllerSelectors).forEach(controller => {
-      new MenuButton(controller, this.config, this.mobileMediaQuery)
+      // Skip label spans — they are visual labels, not interactive controllers
+      if (controller.classList.contains(this.config.labelClass)) return
+      this.menuButtons.push(new MenuButton(controller, this.config, this.mobileMediaQuery))
     })
 
     // Initialize main menu list
     this.menuContainer
-      .querySelectorAll(
-        `.${this.config.itemClass}:not(.${this.config.itemClass}--expanded:has(> span.${this.config.linkClass}))`,
-      )
+      .querySelectorAll(`.${this.config.itemClass}:not(:has(> .${this.config.labelClass}))`)
       .forEach(item => {
         const link = item.querySelector(`.${this.config.linkClass}`)
         if (link && !this.config.controllerTags.includes(link.tagName.toLowerCase())) {
@@ -284,7 +277,8 @@ class MenuController {
    * Destroy the menu controller and clean up
    */
   destroy() {
-    // @TODO: Clean up any event listeners or resources
+    this.menuButtons?.forEach(btn => btn.destroy())
+    this.menuButtons = []
   }
 }
 
@@ -314,21 +308,36 @@ class MenuLinks {
       this.menuitemNodes = Array.from(domNode.querySelectorAll(`.${config.linkClass}`))
     }
 
-    // Check for mega menu using dynamic config
-    const megaMenuWrapper = domNode.closest(`.${config.megaMenuClass}`)
-    if (megaMenuWrapper) {
-      const megaMenuLinks = Array.from(megaMenuWrapper.querySelectorAll(`.${config.linkClass}`))
-      this.menuitemNodes = [...this.menuitemNodes, ...megaMenuLinks]
+    // If inside a mega menu container panel, scope menuitemNodes to that panel only
+    const megaMenuContainer = domNode.closest(`.${config.megaMenuContainerClass}`)
+    if (megaMenuContainer) {
+      this.menuitemNodes = Array.from(megaMenuContainer.querySelectorAll(`.${config.linkClass}`))
     }
+
+    this.boundOnMenuitemKeydown = this.onMenuitemKeydown.bind(this)
 
     if (domNode && config.controllerTags.includes(domNode.tagName.toLowerCase())) {
       this.menuitemNodes = this.menuitemNodes.filter(item => item !== domNode)
     } else {
-      this.domNode.addEventListener('keydown', this.onMenuitemKeydown.bind(this))
+      this.domNode.addEventListener('keydown', this.boundOnMenuitemKeydown)
     }
+
+    // Skip label spans and other non-interactive heading elements
+    this.menuitemNodes = this.menuitemNodes.filter(item => {
+      if (item.classList.contains(config.labelClass)) return false
+      const tag = item.tagName.toLowerCase()
+      if (tag !== 'button' && config.controllerTags.includes(tag) && !item.hasAttribute('aria-controls')) {
+        return false
+      }
+      return true
+    })
 
     this.firstMenuitem = this.menuitemNodes[0]
     this.lastMenuitem = this.menuitemNodes[this.menuitemNodes.length - 1]
+  }
+
+  destroy() {
+    this.domNode.removeEventListener('keydown', this.boundOnMenuitemKeydown)
   }
 
   /**
@@ -434,23 +443,23 @@ class MenuLinks {
     const parentMenu = target.closest('ul[data-depth]')
     let menuDepth = parentMenu ? parseInt(parentMenu.getAttribute('data-depth')) : 0
 
-    // If it's a mega menu, find the related controller and use its data depth instead
-    const megaMenu = target.closest(`.${this.config.megaMenuClass}`)
-    if (megaMenu) {
-      const megaMenuDepth = megaMenu.getAttribute('data-depth')
-      if (megaMenuDepth) {
-        menuDepth = parseInt(megaMenuDepth)
+    // If inside a mega menu container panel, get depth from the container element
+    const megaContainer = target.closest(`.${this.config.megaMenuContainerClass}`)
+    if (megaContainer) {
+      const containerDepth = megaContainer.getAttribute('data-depth')
+      if (containerDepth) {
+        menuDepth = parseInt(containerDepth)
       }
     }
 
     // If we are at the top level and the target is a link, do nothing.
     if (menuDepth === 0 && target?.tagName === 'A') return
 
-    // Build selector for controller options
+    // Build selector for controller options — include mega menu container panels
     const controler = this.config.controllerTags
       .map(
         tag =>
-          `${tag}.${this.config.buttonClass}[aria-expanded="true"] + ul, ${tag}.${this.config.buttonClass}[aria-expanded="true"] + .menu`,
+          `${tag}.${this.config.buttonClass}[aria-expanded="true"] + ul, ${tag}.${this.config.buttonClass}[aria-expanded="true"] + .menu, ${tag}.${this.config.buttonClass}[aria-expanded="true"] + .${this.config.megaMenuContainerClass}`,
       )
       .join(', ')
 
@@ -521,7 +530,7 @@ class MenuLinks {
    * - If the above conditions are met, the method simulates a click on the menu controller button (if it is indeed a button), which is expected to toggle the visibility of the menu, typically closing it.
    */
   handleTab(event) {
-    const menuContainer = this.domNode.closest(this.config.menuSelector)
+    const menuContainer = this.domNode.closest(`.${this.config.menuSelector}`)
 
     // Find the parent menuNode with dataset.depth === '1' for nested menus
     let menuNode = this.domNode.closest('ul')
@@ -556,9 +565,15 @@ class MenuLinks {
       const currentMenuNode = this.domNode.closest('ul')
 
       if (currentMenuNode && currentMenuNode.dataset.depth > 0) {
-        const menuController = menuContainer.querySelector(
-          `[data-menu-controls="${currentMenuNode.getAttribute('id')}"]`,
-        )
+        let menuController = menuContainer.querySelector(`[data-menu-controls="${currentMenuNode.getAttribute('id')}"]`)
+
+        // Mega menu fallback: ul is nested inside a container div that the button controls
+        if (!menuController) {
+          const megaContainer = currentMenuNode.closest(`.${this.config.megaMenuContainerClass}`)
+          if (megaContainer && megaContainer.id) {
+            menuController = menuContainer.querySelector(`[data-menu-controls="${megaContainer.id}"]`)
+          }
+        }
 
         // Get direct children of the current menu
         const menuChildren = Array.from(currentMenuNode.querySelectorAll(`:scope > .${this.config.itemClass}`))
@@ -582,10 +597,23 @@ class MenuLinks {
    * Note: This method assumes the controlling button is associated with the menu via the 'data-menu-controls' attribute.
    */
   handleEscape() {
-    // Find controlling button and close menu
+    const menuContainer = this.domNode.closest(`.${this.config.menuSelector}`)
     const menuNode = this.domNode.closest('ul')
+
+    // Direct lookup by the ul's own id
     if (menuNode && menuNode.id) {
-      const controllingButton = document.querySelector(`[data-menu-controls="${menuNode.id}"]`)
+      const controllingButton = menuContainer?.querySelector(`[data-menu-controls="${menuNode.id}"]`)
+      if (controllingButton) {
+        controllingButton.setAttribute('aria-expanded', 'false')
+        controllingButton.focus()
+        return
+      }
+    }
+
+    // Mega menu fallback: ul is nested inside a container div that the button controls
+    const megaContainer = this.domNode.closest(`.${this.config.megaMenuContainerClass}`)
+    if (megaContainer && megaContainer.id) {
+      const controllingButton = menuContainer?.querySelector(`[data-menu-controls="${megaContainer.id}"]`)
       if (controllingButton) {
         controllingButton.setAttribute('aria-expanded', 'false')
         controllingButton.focus()
@@ -603,7 +631,7 @@ class MenuLinks {
    */
   handleNestedMenuLeft() {
     // Find the closest menu container to get access to proper navigation
-    const menuContainer = this.domNode.closest(this.config.menuSelector)
+    const menuContainer = this.domNode.closest(`.${this.config.menuSelector}`)
 
     // Find parent ul element
     const parentMenu = this.domNode.closest('ul')
@@ -633,11 +661,10 @@ class MenuLinks {
    */
   handleNestedMenuRight() {
     // Find the closest menu container to get access to proper navigation
-    const menuContainer = this.domNode.closest(this.config.menuSelector)
+    const menuContainer = this.domNode.closest(`.${this.config.menuSelector}`)
 
     // Find the top-level controller item for this nested menu
     const controllerItem = this.findControllerItem()
-
     if (controllerItem) {
       this.navigateToTopLevelItem(controllerItem, 'next', menuContainer)
     }
@@ -650,7 +677,19 @@ class MenuLinks {
    * @returns {HTMLElement|null} - The menu controller element or null
    */
   findMenuController(menuNode, menuContainer) {
-    return menuContainer.querySelector(`[data-menu-controls="${menuNode.id}"]`)
+    // Direct lookup by the menu node's own id
+    if (menuNode.id) {
+      const controller = menuContainer.querySelector(`[data-menu-controls="${menuNode.id}"]`)
+      if (controller) return controller
+    }
+
+    // Mega menu fallback: the ul is nested inside a container div that the button controls
+    const megaContainer = menuNode.closest(`.${this.config.megaMenuContainerClass}`)
+    if (megaContainer && megaContainer.id) {
+      return menuContainer.querySelector(`[data-menu-controls="${megaContainer.id}"]`)
+    }
+
+    return null
   }
 
   /**
@@ -753,28 +792,14 @@ class MenuLinks {
    */
   handleNonNestedMenu(direction) {
     // Get menu container
-    const menuContainer = this.domNode.closest(this.config.menuSelector)
+    const menuContainer = this.domNode.closest(`.${this.config.menuSelector}`)
 
     // Find parent ul element
     const parentMenu = this.domNode.closest('ul')
     const menuItems = Array.from(parentMenu.children)
 
-    let targetIndex = 0
-
-    // Mega menu items should count in the same menu as their related ul
-    const megaMenu = this.domNode.closest(`.${this.config.megaMenuClass}`)
-
-    // If mega menu find controller data-menu-controls and set that as targetIndex
-    if (megaMenu) {
-      const menuController = menuContainer.querySelector(`[data-menu-controls="${megaMenu.getAttribute('id')}"]`)
-
-      if (menuController) {
-        targetIndex = menuItems.indexOf(menuController.closest(`.${this.config.itemClass}`))
-      }
-    } else {
-      // Find the index of the target in menuItems
-      targetIndex = menuItems.indexOf(this.domNode.closest(`.${this.config.itemClass}`))
-    }
+    // Find the index of the current item in the top-level menu
+    const targetIndex = menuItems.indexOf(this.domNode.closest(`.${this.config.itemClass}`))
 
     const leftSibling = this.getPreviousItem(menuItems, targetIndex)
     const rightSibling = this.getNextItem(menuItems, targetIndex)
@@ -879,6 +904,12 @@ class MenuLinks {
     const selector = `.${this.config.linkClass}:is(a[href], ${controller})`
 
     return [...menu.querySelectorAll(selector)].filter(element => {
+      // Skip label spans and other non-interactive heading elements
+      if (element.classList.contains(this.config.labelClass)) return false
+      const tag = element.tagName.toLowerCase()
+      if (tag !== 'button' && this.config.controllerTags.includes(tag) && !element.hasAttribute('aria-controls')) {
+        return false
+      }
       // Use checkVisibility if available, otherwise fallback to basic visibility check
       if (typeof element.checkVisibility === 'function') {
         return element.checkVisibility({
@@ -886,6 +917,7 @@ class MenuLinks {
           visibilityProperty: true,
         })
       }
+      return true
     })
   }
 }
@@ -901,19 +933,30 @@ class MenuButton extends MenuLinks {
    * @param {MediaQueryList} mobileMediaQuery - The mobile media query object
    */
   constructor(buttonNode, config, mobileMediaQuery) {
-    const menuContainer = buttonNode.closest(config.menuSelector)
+    const menuContainer = buttonNode.closest(`.${config.menuSelector}`)
     super(buttonNode, config)
 
     this.buttonNode = buttonNode
     this.config = config
     this.mobileMediaQuery = mobileMediaQuery
 
+    this.boundOnButtonKeydown = this.onButtonKeydown.bind(this)
+    this.boundOnButtonClick = this.onButtonClick.bind(this)
+    this.boundOnBackgroundMousedown = this.onBackgroundMousedown.bind(this)
+
     // Find the related menu
     const controlsId = buttonNode.getAttribute('data-menu-controls')
     this.menuNode = controlsId ? document.getElementById(controlsId) : null
 
     if (this.menuNode) {
-      this.menuitemNodes = Array.from(this.menuNode.querySelectorAll(`.${config.linkClass}`))
+      this.menuitemNodes = Array.from(this.menuNode.querySelectorAll(`.${config.linkClass}`)).filter(item => {
+        if (item.classList.contains(config.labelClass)) return false
+        const tag = item.tagName.toLowerCase()
+        if (tag !== 'button' && config.controllerTags.includes(tag) && !item.hasAttribute('aria-controls')) {
+          return false
+        }
+        return true
+      })
       this.firstMenuitem = this.menuitemNodes[0]
       this.lastMenuitem = this.menuitemNodes[this.menuitemNodes.length - 1]
     }
@@ -926,18 +969,21 @@ class MenuButton extends MenuLinks {
 
     // Check if listeners are already attached to prevent duplicates
     if (!this.buttonNode.hasAttribute('data-menu')) {
-      // Remove any existing listeners first
-      this.buttonNode.removeEventListener('keydown', this.onButtonKeydown.bind(this))
-      this.buttonNode.removeEventListener('click', this.onButtonClick.bind(this))
-
-      // Attach event listeners to the main menu button
-      this.buttonNode.addEventListener('keydown', this.onButtonKeydown.bind(this))
-      this.buttonNode.addEventListener('click', this.onButtonClick.bind(this))
+      this.buttonNode.addEventListener('keydown', this.boundOnButtonKeydown)
+      this.buttonNode.addEventListener('click', this.boundOnButtonClick)
       this.buttonNode.setAttribute('data-menu', 'true')
     }
 
     // Add background click listener
-    document.addEventListener('mousedown', this.onBackgroundMousedown.bind(this))
+    document.addEventListener('mousedown', this.boundOnBackgroundMousedown)
+  }
+
+  destroy() {
+    super.destroy()
+    this.buttonNode.removeEventListener('keydown', this.boundOnButtonKeydown)
+    this.buttonNode.removeEventListener('click', this.boundOnButtonClick)
+    document.removeEventListener('mousedown', this.boundOnBackgroundMousedown)
+    this.buttonNode.removeAttribute('data-menu')
   }
 
   /**
@@ -1006,7 +1052,20 @@ class MenuButton extends MenuLinks {
 
       case 'Esc':
       case 'Escape':
-        this.closePopup()
+        if (this.isOpen()) {
+          this.closePopup()
+        } else {
+          // Already closed — progressively close the parent nested menu
+          const menuContainer = this.buttonNode.closest(`.${this.config.menuSelector}`)
+          const parentMenu = this.buttonNode.closest('ul[data-depth]:not([data-depth="0"])')
+          if (parentMenu) {
+            const parentController = this.findMenuController(parentMenu, menuContainer)
+            if (parentController?.tagName === 'BUTTON') {
+              parentController.setAttribute('aria-expanded', 'false')
+              parentController.focus()
+            }
+          }
+        }
         flag = true
         break
 
@@ -1059,12 +1118,18 @@ class MenuButton extends MenuLinks {
     const nestedList = controlsId ? document.getElementById(controlsId) : null
 
     if (nestedList) {
-      const firstItem = nestedList.querySelector(`.${this.config.linkClass}`)
+      // Find the first focusable item, skipping label spans and other non-interactive elements
+      const allItems = Array.from(nestedList.querySelectorAll(`.${this.config.linkClass}`))
+      const firstItem = allItems.find(el => {
+        if (el.classList.contains(this.config.labelClass)) return false
+        const tag = el.tagName.toLowerCase()
+        if (tag !== 'button' && this.config.controllerTags.includes(tag) && !el.hasAttribute('aria-controls')) {
+          return false
+        }
+        return true
+      })
 
-      // If the first item is not a controller or link, it is a default menu so move to the first menu item within.
-      if (firstItem.tagName !== 'BUTTON' && firstItem.tagName !== 'A') {
-        this.focusFirstItem(firstItem)
-      } else {
+      if (firstItem) {
         // Delay focus to allow CSS visibility transition to complete
         // This ensures the element can receive focus while animating
         setTimeout(() => {
@@ -1114,7 +1179,7 @@ class MenuButton extends MenuLinks {
    * This method is part of the menu management functionality, allowing for better accessibility and user experience by managing the expanded state of menu buttons.
    */
   closeAll() {
-    const menuContainer = this.buttonNode.closest(this.config.menuSelector)
+    const menuContainer = this.buttonNode.closest(`.${this.config.menuSelector}`)
 
     // Find the parent menu of this button to determine depth
     const parentMenu = this.buttonNode.closest('ul[data-depth]')
@@ -1170,7 +1235,8 @@ class MenuButton extends MenuLinks {
    * If it did and the menu is open and the device is not mobile, it sets focus to the button node and closes the popup menu.
    */
   onBackgroundMousedown(event) {
-    const menuContainer = this.buttonNode.closest(this.config.menuSelector)
+    const menuContainer = this.buttonNode.closest(`.${this.config.menuSelector}`)
+    if (!menuContainer) return
 
     // Only close on background click if not on mobile
     if (

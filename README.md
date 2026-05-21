@@ -11,6 +11,7 @@ This library currently implements the **[Menubar pattern](https://www.w3.org/WAI
 We have plans to support additional menu patterns, including:
 
 - Tree menu pattern
+- Disclosure navigation menu pattern
 - And more to come
 
 ## Features
@@ -99,7 +100,7 @@ await menu.init()
 
 | Option             | Type             | Default        | Description                          |
 | ------------------ | ---------------- | -------------- | ------------------------------------ |
-| `menuSelector`     | `string`         | `'c-menu'`    | CSS selector for menu containers     |
+| `menuSelector`     | `string`         | `'c-menu'`     | CSS selector for menu containers     |
 | `buttonClass`      | `string`         | `'menu__link'` | CSS class for menu buttons           |
 | `linkClass`        | `string`         | `'menu__link'` | CSS class for menu links             |
 | `itemClass`        | `string`         | `'menu__item'` | CSS class for menu items             |
