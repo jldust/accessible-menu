@@ -25,7 +25,7 @@ function once(id, selector, context = document) {
  */
 const DEFAULT_CONFIG = {
   menuSelector: 'c-menu',
-  buttonClass: 'menu__link',
+  buttonClass: 'menu__button',
   linkClass: 'menu__link',
   labelClass: 'menu__label',
   itemClass: 'menu__item',
@@ -266,7 +266,7 @@ class MenuController {
     this.menuContainer
       .querySelectorAll(`.${this.config.itemClass}:not(:has(> .${this.config.labelClass}))`)
       .forEach(item => {
-        const link = item.querySelector(`.${this.config.linkClass}`)
+        const link = item.querySelector(`:scope > .${this.config.linkClass}`)
         if (link && !this.config.controllerTags.includes(link.tagName.toLowerCase())) {
           new MenuLinks(link, this.config)
         }
@@ -742,7 +742,9 @@ class MenuLinks {
     }
 
     const targetMenuItem = topLevelItems[targetIndex]
-    const targetMenuLink = targetMenuItem.querySelector(`.${this.config.linkClass}`)
+    const targetMenuLink =
+      targetMenuItem.querySelector(`:scope > .${this.config.linkClass}`) ??
+      targetMenuItem.querySelector(`:scope > .${this.config.buttonClass}`)
 
     this.closeAllButtons(menuContainer)
 
@@ -815,8 +817,10 @@ class MenuLinks {
     }
 
     // Select actual focus element
-    siblingToFocus = siblingToFocus.querySelector(`.${this.config.linkClass}`)
-    siblingToFocus.focus()
+    siblingToFocus =
+      siblingToFocus.querySelector(`:scope > .${this.config.linkClass}`) ??
+      siblingToFocus.querySelector(`:scope > .${this.config.buttonClass}`)
+    siblingToFocus?.focus()
   }
 
   /**
@@ -901,7 +905,7 @@ class MenuLinks {
 
     // Build selector for controller tags and links
     const controller = this.config.controllerTags.join(', ')
-    const selector = `.${this.config.linkClass}:is(a[href], ${controller})`
+    const selector = `:is(.${this.config.linkClass}, .${this.config.buttonClass}, ${controller})`
 
     return [...menu.querySelectorAll(selector)].filter(element => {
       // Skip label spans and other non-interactive heading elements
@@ -1119,7 +1123,7 @@ class MenuButton extends MenuLinks {
 
     if (nestedList) {
       // Find the first focusable item, skipping label spans and other non-interactive elements
-      const allItems = Array.from(nestedList.querySelectorAll(`.${this.config.linkClass}`))
+      const allItems = Array.from(nestedList.querySelectorAll(`.${this.config.linkClass}, .${this.config.buttonClass}`))
       const firstItem = allItems.find(el => {
         if (el.classList.contains(this.config.labelClass)) return false
         const tag = el.tagName.toLowerCase()

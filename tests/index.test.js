@@ -32,7 +32,7 @@ describe('Menubar', () => {
             <a href="#home" class="menu__link">Home</a>
           </li>
           <li class="menu__item menu__item--expanded">
-            <button class="menu__link">About</button>
+            <button class="menu__button">About</button>
             <ul class="menu" data-depth="1">
               <li class="menu__item">
                 <a href="#story" class="menu__link">Our Story</a>
@@ -46,7 +46,7 @@ describe('Menubar', () => {
             </ul>
           </li>
           <li class="menu__item menu__item--expanded">
-            <button class="menu__link">Services</button>
+            <button class="menu__button">Services</button>
             <ul class="menu" data-depth="1">
               <li class="menu__item">
                 <a href="#research" class="menu__link">Research</a>
@@ -55,7 +55,7 @@ describe('Menubar', () => {
                 <a href="#development" class="menu__link">Development</a>
               </li>
               <li class="menu__item menu__item--expanded">
-                <button class="menu__link">Nested Services</button>
+                <button class="menu__button">Nested Services</button>
                 <ul class="menu" data-depth="2">
                   <li class="menu__item">
                     <a href="#design" class="menu__link">Web Design</a>
@@ -87,7 +87,7 @@ describe('Menubar', () => {
     it('should use default configuration when no config provided', () => {
       const menu = new Menubar()
       expect(menu.config.menuSelector).toBe('c-menu')
-      expect(menu.config.buttonClass).toBe('menu__link')
+      expect(menu.config.buttonClass).toBe('menu__button')
       expect(menu.config.linkClass).toBe('menu__link')
       expect(menu.config.itemClass).toBe('menu__item')
       expect(menu.config.mobileBreakpoint).toBe(768)
@@ -249,21 +249,130 @@ describe('Menubar', () => {
 
       expect(button.getAttribute('aria-expanded')).toBe('false')
     })
+
+    it('should navigate to next top-level item on ArrowRight from inside a submenu', () => {
+      // Use basic.html-style HTML: buttons carry menu__link class so :scope > .menu__link
+      // resolves the controller directly as a direct child of its <li>.
+      document.body.innerHTML = `
+        <nav class="c-menu">
+          <ul class="menu" data-depth="0">
+            <li class="menu__item">
+              <a href="#home" class="menu__link">Home</a>
+            </li>
+            <li class="menu__item menu__item--expanded">
+              <button class="menu__link">About</button>
+              <ul class="menu" data-depth="1">
+                <li class="menu__item"><a href="#story" class="menu__link">Our Story</a></li>
+                <li class="menu__item"><a href="#team" class="menu__link">Team</a></li>
+              </ul>
+            </li>
+            <li class="menu__item menu__item--expanded">
+              <button class="menu__link">Services</button>
+              <ul class="menu" data-depth="1">
+                <li class="menu__item"><a href="#research" class="menu__link">Research</a></li>
+              </ul>
+            </li>
+            <li class="menu__item">
+              <a href="#contact" class="menu__link">Contact</a>
+            </li>
+          </ul>
+        </nav>
+      `
+      const localContainer = document.querySelector('.c-menu')
+      const localMenu = new Menubar(document, { buttonClass: 'menu__link', linkClass: 'menu__link' })
+      localMenu.init()
+
+      const aboutBtn = Array.from(localContainer.querySelectorAll('button.menu__link'))
+        .find(btn => btn.getAttribute('aria-label') === 'About')
+      const servicesBtn = Array.from(localContainer.querySelectorAll('button.menu__link'))
+        .find(btn => btn.getAttribute('aria-label') === 'Services')
+
+      // Open About's submenu with ArrowDown, then simulate focus landing on first subitem
+      const downEvent = new KeyboardEvent('keydown', { key: 'ArrowDown' })
+      aboutBtn.dispatchEvent(downEvent)
+      expect(aboutBtn.getAttribute('aria-expanded')).toBe('true')
+
+      const firstSubLink = localContainer.querySelector('ul[data-depth="1"] .menu__link')
+      firstSubLink.focus()
+      expect(document.activeElement).toBe(firstSubLink)
+
+      // ArrowRight from inside About's submenu should close About and open Services
+      const rightEvent = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })
+      firstSubLink.dispatchEvent(rightEvent)
+
+      expect(document.activeElement).toBe(servicesBtn)
+      expect(servicesBtn.getAttribute('aria-expanded')).toBe('true')
+      expect(aboutBtn.getAttribute('aria-expanded')).toBe('false')
+    })
+
+    it('should navigate to previous top-level item on ArrowLeft from inside a submenu', () => {
+      // Use basic.html-style HTML: buttons carry menu__link class so :scope > .menu__link
+      // resolves the controller directly as a direct child of its <li>.
+      document.body.innerHTML = `
+        <nav class="c-menu">
+          <ul class="menu" data-depth="0">
+            <li class="menu__item">
+              <a href="#home" class="menu__link">Home</a>
+            </li>
+            <li class="menu__item menu__item--expanded">
+              <button class="menu__link">About</button>
+              <ul class="menu" data-depth="1">
+                <li class="menu__item"><a href="#story" class="menu__link">Our Story</a></li>
+                <li class="menu__item"><a href="#team" class="menu__link">Team</a></li>
+              </ul>
+            </li>
+            <li class="menu__item menu__item--expanded">
+              <button class="menu__link">Services</button>
+              <ul class="menu" data-depth="1">
+                <li class="menu__item"><a href="#research" class="menu__link">Research</a></li>
+              </ul>
+            </li>
+            <li class="menu__item">
+              <a href="#contact" class="menu__link">Contact</a>
+            </li>
+          </ul>
+        </nav>
+      `
+      const localContainer = document.querySelector('.c-menu')
+      const localMenu = new Menubar(document, { buttonClass: 'menu__link', linkClass: 'menu__link' })
+      localMenu.init()
+
+      const aboutBtn = Array.from(localContainer.querySelectorAll('button.menu__link'))
+        .find(btn => btn.getAttribute('aria-label') === 'About')
+      const homeLink = localContainer.querySelector('[data-depth="0"] > li > a.menu__link')
+
+      // Open About's submenu with ArrowDown, then simulate focus landing on first subitem
+      const downEvent = new KeyboardEvent('keydown', { key: 'ArrowDown' })
+      aboutBtn.dispatchEvent(downEvent)
+      expect(aboutBtn.getAttribute('aria-expanded')).toBe('true')
+
+      const firstSubLink = localContainer.querySelector('ul[data-depth="1"] .menu__link')
+      firstSubLink.focus()
+      expect(document.activeElement).toBe(firstSubLink)
+
+      // ArrowLeft from inside About's submenu should close About and focus Home (previous top-level item)
+      const leftEvent = new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true })
+      firstSubLink.dispatchEvent(leftEvent)
+
+      expect(document.activeElement).toBe(homeLink)
+      expect(aboutBtn.getAttribute('aria-expanded')).toBe('false')
+    })
   })
 
   describe('Menu Links Navigation', () => {
-    let menu, links
+    let menu, links, buttons
 
     beforeEach(() => {
       menu = new Menubar()
       menu.init()
       // Get only top-level links for navigation testing
       links = Array.from(menuContainer.querySelectorAll('ul[data-depth="0"] > li > .menu__link'))
+      buttons = Array.from(menuContainer.querySelectorAll('ul[data-depth="0"] > li > .menu__button'))
     })
 
     it('should have focusable menu links', () => {
       const homeLink = links.find(link => link.textContent === 'Home')
-      const aboutButton = links.find(link => link.textContent === 'About')
+      const aboutButton = buttons.find(button => button.textContent === 'About')
 
       expect(homeLink).toBeTruthy()
       expect(aboutButton).toBeTruthy()
@@ -379,13 +488,13 @@ describe('Menubar', () => {
               <a class="menu__link" href="#">Simple Link</a>
             </li>
             <li class="menu__item">
-              <button class="menu__link">Menu Button</button>
+              <button class="menu__button">Menu Button</button>
               <ul class="menu">
                 <li class="menu__item">
                   <a class="menu__link" href="#" >Subitem 1</a>
                 </li>
                 <li class="menu__item">
-                  <button class="menu__link">Sub Button</button>
+                  <button class="menu__button">Sub Button</button>
                   <ul class="menu">
                     <li class="menu__item">
                       <a class="menu__link" href="#">Deep Item</a>
@@ -462,7 +571,7 @@ describe('Menubar', () => {
         <nav class="c-menu">
           <ul class="menu">
             <li class="menu__item">
-              <button class="menu__link">Orphan Button</button>
+              <button class="menu__button">Orphan Button</button>
             </li>
           </ul>
         </nav>
@@ -541,7 +650,7 @@ describe('Menubar', () => {
       <nav class="c-menu c-mega-menu" data-breakpoint="1024">
         <ul class="menu" data-depth="0">
           <li class="menu__item menu__item--expanded">
-            <button class="menu__link">Services</button>
+            <button class="menu__button">Services</button>
             <div class="c-mega-menu__container" data-depth="1">
               <ul class="menu" data-depth="1">
                 <li class="menu__item"><a href="#research" class="menu__link">Research</a></li>
@@ -554,7 +663,7 @@ describe('Menubar', () => {
             </div>
           </li>
           <li class="menu__item menu__item--expanded">
-            <button class="menu__link">Our Work</button>
+            <button class="menu__button">Our Work</button>
             <div class="c-mega-menu__container" data-depth="1">
               <ul class="menu" data-depth="1">
                 <li class="menu__item"><a href="#emissions" class="menu__link">Reducing Emissions</a></li>
@@ -583,13 +692,13 @@ describe('Menubar', () => {
       })
       menu.init()
       // Resolve buttons by label after init assigns aria-label
-      const buttons = Array.from(megaContainer.querySelectorAll('button.menu__link'))
+      const buttons = Array.from(megaContainer.querySelectorAll('button.menu__button'))
       servicesBtn = buttons.find(b => b.getAttribute('aria-label') === 'Services')
       workBtn = buttons.find(b => b.getAttribute('aria-label') === 'Our Work')
     })
 
     it('should assign ARIA attributes to mega menu buttons after init', () => {
-      const buttons = megaContainer.querySelectorAll('button.menu__link')
+      const buttons = megaContainer.querySelectorAll('button.menu__button')
       buttons.forEach(btn => {
         expect(btn.getAttribute('data-menu-controls')).toBeTruthy()
         expect(btn.getAttribute('aria-haspopup')).toBe('true')
@@ -681,7 +790,7 @@ describe('Menubar', () => {
         <nav class="c-menu c-mega-menu">
           <ul class="menu" data-depth="0">
             <li class="menu__item menu__item--expanded">
-              <button class="menu__link">Menu</button>
+              <button class="menu__button">Menu</button>
               <div class="c-mega-menu__container" data-depth="1">
                 <ul class="menu" data-depth="1">
                   <li class="menu__item"><a href="#x" class="menu__link">Link X</a></li>
@@ -692,7 +801,7 @@ describe('Menubar', () => {
           </ul>
         </nav>
       `
-      const menu= new Menubar(document, {
+      const menu = new Menubar(document, {
         megaMenuClass: 'c-mega-menu',
         megaMenuContainerClass: 'c-mega-menu__container',
       })
@@ -705,7 +814,7 @@ describe('Menubar', () => {
         <nav class="c-menu c-mega-menu">
           <ul class="menu" data-depth="0">
             <li class="menu__item menu__item--expanded">
-              <button class="menu__link">Services</button>
+              <button class="menu__button">Services</button>
               <div class="c-mega-menu__container" data-depth="1">
                 <ul class="menu" data-depth="1">
                   <li class="menu__item"><span class="menu__link menu__nolink">Strategy</span></li>
@@ -717,13 +826,13 @@ describe('Menubar', () => {
           </ul>
         </nav>
       `
-      const menu= new Menubar(document, {
+      const menu = new Menubar(document, {
         megaMenuClass: 'c-mega-menu',
         megaMenuContainerClass: 'c-mega-menu__container',
       })
       menu.init()
 
-      const btn = document.querySelector('button.menu__link')
+      const btn = document.querySelector('button.menu__button')
       btn.click() // open panel
 
       // The span heading should not be in the navigable list — Research should be first
@@ -746,7 +855,7 @@ describe('Menubar', () => {
         <nav class="c-menu c-mega-menu">
           <ul class="menu" data-depth="0">
             <li class="menu__item menu__item--expanded">
-              <button class="menu__link">Services</button>
+              <button class="menu__button">Services</button>
               <div class="c-mega-menu__container" data-depth="1">
                 <ul class="menu" data-depth="1">
                   <li class="menu__item"><span class="menu__link menu__nolink">Strategy</span></li>
@@ -764,7 +873,7 @@ describe('Menubar', () => {
       })
       menu.init()
 
-      const button = document.querySelector('button.menu__link')
+      const button = document.querySelector('button.menu__button')
       button.click()
 
       const researchLink = document.getElementById('link-research')
