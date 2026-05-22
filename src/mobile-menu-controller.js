@@ -1,7 +1,7 @@
 /**
  * MobileMenuController - Handles mobile menu functionality
  *
- * This class provides mobile menu controls for menus with data-mobile attributes.
+ * This class provides mobile menu controls for menus with mobile controls .
  * It manages menu opening/closing, keyboard navigation, focus management, and
  * outside click handling for mobile breakpoints.
  */
@@ -47,11 +47,16 @@ export class MobileMenuController {
       return
     }
 
+    // Set boundary for outside click detection - either menu container or specified container
+    const boundaryClass = this.config.menuContainer ?? this.config.menuSelector
+    this.clickBoundary = this.menuContainer.closest(`.${boundaryClass}`) ?? this.menuContainer
+
     // Get mobile breakpoint from data attribute or config
     this.mobileBreakpoint =
       this.menuContainer.getAttribute(this.config.dataBreakpointAttribute)?.replace('#', '') ||
       this.config.mobileBreakpoint
 
+    // Set up media query for mobile breakpoint
     this.mobileMediaQuery = window.matchMedia(`(max-width: ${this.mobileBreakpoint}px)`)
 
     this.setupEventListeners()
@@ -161,7 +166,7 @@ export class MobileMenuController {
    */
   onWindowClick(event) {
     // Only close if we're in mobile viewport and click is outside menu container
-    if (this.mobileMediaQuery && this.mobileMediaQuery.matches && !this.menuContainer.contains(event.target)) {
+    if (this.mobileMediaQuery && this.mobileMediaQuery.matches && !this.clickBoundary.contains(event.target)) {
       this.closeMobile()
     }
   }
