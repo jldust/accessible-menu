@@ -13,6 +13,12 @@ export interface MenuConfig {
   itemClass?: string
   /** CSS class for mega menu wrapper */
   megaMenuClass?: string
+  /** Enable mega menu behavior — library will auto-mark non-ul panel siblings with data-mega-panel */
+  megaMenu?: boolean
+  /** CSS class for mega menu container panels. When null and megaMenu is true, uses data-mega-panel attribute */
+  megaMenuContainerClass?: string | null
+  /** CSS class used as the outside-click boundary. Falls back to menuSelector when null */
+  menuContainer?: string | null
   /** Array of HTML tag names that can act as menu controllers */
   controllerTags?: string[]
   /** CSS class added to controller elements */

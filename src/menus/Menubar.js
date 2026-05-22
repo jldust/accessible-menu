@@ -25,12 +25,13 @@ function once(id, selector, context = document) {
  */
 const DEFAULT_CONFIG = {
   menuSelector: 'c-menu',
+  menuContainer: null,
   buttonClass: 'menu__button',
-  linkClass: 'menu__link',
   labelClass: 'menu__label',
+  linkClass: 'menu__link',
   itemClass: 'menu__item',
-  megaMenuClass: 'c-mega-menu',
-  megaMenuContainerClass: 'c-mega-menu__container',
+  megaMenu: false,
+  megaMenuContainerClass: null,
   controllerTags: ['button', 'span'],
   controllerClass: 'controller',
   mobileBreakpoint: 768,
@@ -151,6 +152,9 @@ export class Menubar {
           element.setAttribute('aria-controls', submenuId)
           element.setAttribute('data-menu-controls', submenuId)
           element.setAttribute('aria-label', element.textContent.trim())
+          if (this.config.megaMenu && !this.config.megaMenuContainerClass && submenu.tagName !== 'UL') {
+            submenu.setAttribute('data-mega-panel', 'true')
+          }
         }
       } else if (submenu) {
         const submenuId = `panel-${id}`
@@ -307,7 +311,8 @@ class MenuLinks {
     }
 
     // If inside a mega menu container panel, scope menuitemNodes to that panel only
-    const megaMenuContainer = domNode.closest(`.${config.megaMenuContainerClass}`)
+    const megaPanelSelector = config.megaMenuContainerClass ? `.${config.megaMenuContainerClass}` : '[data-mega-panel]'
+    const megaMenuContainer = domNode.closest(megaPanelSelector)
     if (megaMenuContainer) {
       this.menuitemNodes = Array.from(megaMenuContainer.querySelectorAll(`.${config.linkClass}`))
     }
@@ -442,7 +447,9 @@ class MenuLinks {
     let menuDepth = parentMenu ? parseInt(parentMenu.getAttribute('data-depth')) : 0
 
     // If inside a mega menu container panel, get depth from the container element
-    const megaContainer = target.closest(`.${this.config.megaMenuContainerClass}`)
+    const megaContainer = target.closest(
+      this.config.megaMenuContainerClass ? `.${this.config.megaMenuContainerClass}` : '[data-mega-panel]',
+    )
     if (megaContainer) {
       const containerDepth = megaContainer.getAttribute('data-depth')
       if (containerDepth) {
@@ -454,14 +461,14 @@ class MenuLinks {
     if (menuDepth === 0 && target?.tagName === 'A') return
 
     // Build selector for controller options — include mega menu container panels
-    const controler = this.config.controllerTags
+    const controller = this.config.controllerTags
       .map(
         tag =>
-          `${tag}.${this.config.buttonClass}[aria-expanded="true"] + ul, ${tag}.${this.config.buttonClass}[aria-expanded="true"] + .menu, ${tag}.${this.config.buttonClass}[aria-expanded="true"] + .${this.config.megaMenuContainerClass}`,
+          `${tag}.${this.config.buttonClass}[aria-expanded="true"] + ul, ${tag}.${this.config.buttonClass}[aria-expanded="true"] + .menu, ${tag}.${this.config.buttonClass}[aria-expanded="true"] + ${this.config.megaMenuContainerClass ? `.${this.config.megaMenuContainerClass}` : '[data-mega-panel]'}`,
       )
       .join(', ')
 
-    const rootMenu = target.closest(controler)
+    const rootMenu = target.closest(controller)
 
     // Focusable elements are links or buttons that are visible.
     const focusableElements = this.getFocusableElements(rootMenu)
@@ -567,7 +574,9 @@ class MenuLinks {
 
         // Mega menu fallback: ul is nested inside a container div that the button controls
         if (!menuController) {
-          const megaContainer = currentMenuNode.closest(`.${this.config.megaMenuContainerClass}`)
+          const megaContainer = currentMenuNode.closest(
+            this.config.megaMenuContainerClass ? `.${this.config.megaMenuContainerClass}` : '[data-mega-panel]',
+          )
           if (megaContainer && megaContainer.id) {
             menuController = menuContainer.querySelector(`[data-menu-controls="${megaContainer.id}"]`)
           }
@@ -609,7 +618,9 @@ class MenuLinks {
     }
 
     // Mega menu fallback: ul is nested inside a container div that the button controls
-    const megaContainer = this.domNode.closest(`.${this.config.megaMenuContainerClass}`)
+    const megaContainer = this.domNode.closest(
+      this.config.megaMenuContainerClass ? `.${this.config.megaMenuContainerClass}` : '[data-mega-panel]',
+    )
     if (megaContainer && megaContainer.id) {
       const controllingButton = menuContainer?.querySelector(`[data-menu-controls="${megaContainer.id}"]`)
       if (controllingButton) {
@@ -682,7 +693,9 @@ class MenuLinks {
     }
 
     // Mega menu fallback: the ul is nested inside a container div that the button controls
-    const megaContainer = menuNode.closest(`.${this.config.megaMenuContainerClass}`)
+    const megaContainer = menuNode.closest(
+      this.config.megaMenuContainerClass ? `.${this.config.megaMenuContainerClass}` : '[data-mega-panel]',
+    )
     if (megaContainer && megaContainer.id) {
       return menuContainer.querySelector(`[data-menu-controls="${megaContainer.id}"]`)
     }
@@ -1237,7 +1250,8 @@ class MenuButton extends MenuLinks {
    * If it did and the menu is open and the device is not mobile, it sets focus to the button node and closes the popup menu.
    */
   onBackgroundMousedown(event) {
-    const menuContainer = this.buttonNode.closest(`.${this.config.menuSelector}`)
+    const boundaryClass = this.config.menuContainer ?? this.config.menuSelector
+    const menuContainer = this.buttonNode.closest(`.${boundaryClass}`)
     if (!menuContainer) return
 
     // Only close on background click if not on mobile
