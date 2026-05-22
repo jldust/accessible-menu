@@ -16,7 +16,7 @@ npm install @jldust/accessible-menu
 
 <!-- Menu structure -->
 <nav class="c-menu" data-breakpoint="768">
-  <ul class="menu">
+  <ul class="menu" data-depth="0">
     <li class="menu__item">
       <a href="#" class="menu__link">Home</a>
     </li>
@@ -76,4 +76,3 @@ These are controlled by the library and attached when the releative variables ex
 - `data-plugin-id` - Unique ID for menu buttons with submenus
 - `data-depth` - Depth level for nested menus (1, 2, 3, etc.)
 - `data-breakpoint` - Custom mobile breakpoint (optional)
-- `data-mobile` - Reference to mobile toggle button ID (optional)

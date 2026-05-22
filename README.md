@@ -98,14 +98,18 @@ await menu.init()
 
 ### Configuration Options
 
-| Option             | Type             | Default        | Description                          |
-| ------------------ | ---------------- | -------------- | ------------------------------------ |
-| `menuSelector`     | `string`         | `'c-menu'`     | CSS selector for menu containers     |
-| `buttonClass`      | `string`         | `'menu__link'` | CSS class for menu buttons           |
-| `linkClass`        | `string`         | `'menu__link'` | CSS class for menu links             |
-| `itemClass`        | `string`         | `'menu__item'` | CSS class for menu items             |
-| `mobileBreakpoint` | `number`         | `768`          | Mobile breakpoint in pixels          |
-| `mobileControlId`  | `string \| null` | `'nav-toggle'` | ID of the mobile menu control button |
+| Option                   | Type             | Default             | Description                                                           |
+| ------------------------ | ---------------- | ------------------- | --------------------------------------------------------------------- |
+| `menuSelector`           | `string`         | `'c-menu'`          | CSS selector for menu containers                                      |
+| `menuContainer`          | `string`         | `'site-header'`     | CSS selector for entire container                                     |
+| `buttonClass`            | `string`         | `'menu__link'`      | CSS class for menu buttons                                            |
+| `labelClass`             | `string`         | `'menu__label'`     | CSS class for menu labels                                             |
+| `linkClass`              | `string`         | `'menu__link'`      | CSS class for menu links                                              |
+| `itemClass`              | `string`         | `'menu__item'`      | CSS class for menu items                                              |
+| `megaMenu`               | `boolean`        | `false`             | Enables mega menu support                                             |
+| `megaMenuContainerClass` | `string`         | `'menu__container'` | CSS class for mega menu dropdown containers                           |
+| `mobileBreakpoint`       | `number`         | `768`               | Mobile breakpoint in pixels                                           |
+| `mobileControlId`        | `string \| null` | `'nav-toggle'`      | ID of the mobile menu control button, when set enables mobile support |
 
 ## HTML Structure
 
@@ -113,7 +117,7 @@ await menu.init()
 
 ```html
 <nav class="c-menu" data-breakpoint="768">
-  <ul class="menu">
+  <ul class="menu" data-depth="0">
     <li class="menu__item">
       <a href="#" class="menu__link">Home</a>
     </li>
@@ -139,7 +143,7 @@ await menu.init()
 
 ```html
 <nav class="c-menu">
-  <ul class="menu">
+  <ul class="menu" data-depth="0">
     <li class="menu__item menu__item--expanded">
       <span class="menu__link">Services</span>
       <div class="c-mega-menu__wrapper">
