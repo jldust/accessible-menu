@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Disclosure Navigation Example</title>
+    <link rel="stylesheet" href="../src/menu-styles.css" />
+    <style>
+      body {
+        margin: 0;
+        color: #18201c;
+        background: #f4f7f5;
+        font-family: Georgia, 'Times New Roman', serif;
+      }
+
+      .c-menu {
+        border-bottom: 1px solid #b7c2bb;
+        background: #fff;
+        padding: 1rem 2rem;
+      }
+
+      #mobile-toggle {
+        display: none;
+      }
+
+      .c-menu ul[data-depth='0'] {
+        display: flex;
+        gap: 2rem;
+      }
+
+      .c-menu ul:not([data-depth='0']) {
+        position: absolute;
+      }
+
+      .menu__button,
+      .menu__link {
+        color: #174c35;
+        font: inherit;
+      }
+
+      .menu__button {
+        background: transparent;
+      }
+
+      main {
+        max-width: 48rem;
+        margin: 4rem auto;
+        padding: 0 1.5rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+        font-weight: 400;
+      }
+
+      .keyboard-ref {
+        margin-top: 2rem;
+        overflow-x: auto;
+        border: 1px solid #b7c2bb;
+        border-radius: 6px;
+        background: #fff;
+        padding: 1.25rem 1.5rem;
+      }
+
+      .keyboard-ref h2 {
+        margin-top: 0;
+      }
+
+      .keyboard-ref table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .keyboard-ref td,
+      .keyboard-ref th {
+        border: 1px solid #b7c2bb;
+        padding: 0.4rem 0.75rem;
+        font-size: 0.9rem;
+        text-align: left;
+      }
+
+      .keyboard-ref th {
+        background: #e6eee9;
+      }
+
+      kbd {
+        display: inline-block;
+        border: 1px solid #9aaba1;
+        border-radius: 3px;
+        background: #f4f7f5;
+        padding: 0.1em 0.4em;
+        font-family: monospace;
+        font-size: 0.85em;
+      }
+
+      @media (max-width: 768px) {
+        #mobile-toggle {
+          display: block;
+          border: 0;
+          background: #174c35;
+          color: #fff;
+          font: inherit;
+          padding: 0.75rem 1rem;
+        }
+
+        .c-menu ul[data-depth='0'] {
+          align-items: stretch;
+          flex-direction: column;
+          gap: 0;
+          width: 100%;
+        }
+
+        .c-menu ul:not([data-depth='0']) {
+          position: static;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <button id="mobile-toggle" aria-expanded="false">Menu</button>
+    <nav class="c-menu" data-breakpoint="768" aria-label="Primary navigation">
+      <ul class="menu" data-depth="0">
+        <li class="menu__item">
+          <a class="menu__link" href="#home">Home</a>
+        </li>
+        <li class="menu__item">
+          <button class="menu__button">Products <span class="icon" aria-hidden="true">&#9662;</span></button>
+          <ul class="menu">
+            <li class="menu__item"><a class="menu__link" href="#design">Design systems</a></li>
+            <li class="menu__item"><a class="menu__link" href="#audits">Accessibility audits</a></li>
+          </ul>
+        </li>
+        <li class="menu__item">
+          <button class="menu__button">Company <span class="icon" aria-hidden="true">&#9662;</span></button>
+          <ul class="menu">
+            <li class="menu__item"><a class="menu__link" href="#about">About</a></li>
+            <li class="menu__item"><a class="menu__link" href="#contact">Contact</a></li>
+          </ul>
+        </li>
+        <li class="menu__item">
+          <a class="menu__link" href="#support">Support</a>
+        </li>
+      </ul>
+    </nav>
+
+    <main>
+      <h1>Disclosure Menu - Keyboard Navigation Demo</h1>
+      <p>
+        This example demonstrates disclosure navigation containing both top-level links and buttons that open simple
+        dropdowns. Use the navigation above with a pointer or keyboard.
+      </p>
+
+      <section class="keyboard-ref" aria-labelledby="keyboard-reference-heading">
+        <h2 id="keyboard-reference-heading">Keyboard Reference</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Key</th>
+              <th>Behaviour</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>Tab</kbd> / <kbd>Shift+Tab</kbd></td>
+              <td>Move through top-level links, buttons, and links in an open dropdown</td>
+            </tr>
+            <tr>
+              <td><kbd>Enter</kbd> / <kbd>Space</kbd></td>
+              <td>Toggle a disclosure button or activate a link</td>
+            </tr>
+            <tr>
+              <td><kbd>Down</kbd> / <kbd>Right</kbd></td>
+              <td>Move to the next item, or move from an expanded button to its first dropdown link</td>
+            </tr>
+            <tr>
+              <td><kbd>Up</kbd> / <kbd>Left</kbd></td>
+              <td>Move to the previous item without wrapping</td>
+            </tr>
+            <tr>
+              <td><kbd>Home</kbd> / <kbd>End</kbd></td>
+              <td>Move to the first or last item at the current level</td>
+            </tr>
+            <tr>
+              <td><kbd>Escape</kbd></td>
+              <td>Close the current dropdown and return focus to its controlling button</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+
+    <script type="module">
+      import { Disclosure } from '../src/index.js'
+
+      const navigation = new Disclosure({
+        mobileControlId: 'mobile-toggle',
+        mobileBreakpoint: 768,
+      })
+      await navigation.init()
+    </script>
+  </body>
+</html>

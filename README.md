@@ -4,14 +4,13 @@ A highly configurable, accessible menu component that supports keyboard navigati
 
 ## Current Support
 
-This library currently implements the **[Menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/)** from the WAI-ARIA Authoring Practices Guide.
+This library implements the **[Menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/)** and the **[Disclosure navigation pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/)** from the WAI-ARIA Authoring Practices Guide.
 
 ### Future Plans
 
 We have plans to support additional menu patterns, including:
 
 - Tree menu pattern
-- Disclosure navigation menu pattern
 - And more to come
 
 ## Features
@@ -76,6 +75,66 @@ await menu.init()
   await menu.init()
 </script>
 ```
+
+## Disclosure Navigation
+
+Use `Disclosure` for simple navigation menus. It does not add menu roles, manage `tabindex`, or include support mega-menu behavior. Mobile navigation is enabled by providing `mobileControlId`.
+
+```html
+<button id="mobile-toggle" aria-expanded="false">Menu</button>
+<nav class="c-menu" aria-label="Primary navigation">
+  <ul class="menu" data-depth="0">
+    <li class="menu__item"><a class="menu__link" href="/">Home</a></li>
+    <li class="menu__item">
+      <button class="menu__button">Products</button>
+      <ul class="menu">
+        <li class="menu__item"><a class="menu__link" href="/products/one">Product one</a></li>
+        <li class="menu__item"><a class="menu__link" href="/products/two">Product two</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+```
+
+```javascript
+import { Disclosure } from '@jldust/accessible-menu'
+
+const navigation = new Disclosure({
+  mobileControlId: 'mobile-toggle',
+  mobileBreakpoint: 768,
+})
+await navigation.init()
+```
+
+Disclosure buttons must be `button` elements followed immediately by the panel they control. Initialization sets `aria-controls`, `aria-expanded="false"`, and the configured controller class. Existing panel IDs are preserved; missing IDs are generated.
+
+| Option                    | Type             | Default             |
+| ------------------------- | ---------------- | ------------------- |
+| `menuSelector`            | `string`         | `'c-menu'`          |
+| `buttonClass`             | `string`         | `'menu__button'`    |
+| `linkClass`               | `string`         | `'menu__link'`      |
+| `controllerClass`         | `string`         | `'controller'`      |
+| `menuContainer`           | `string \| null` | `null`              |
+| `mobileBreakpoint`        | `number`         | `768`               |
+| `mobileControlId`         | `string \| null` | `null`              |
+| `dataBreakpointAttribute` | `string`         | `'data-breakpoint'` |
+
+The mobile toggle must provide its initial `aria-expanded="false"` state. An authored `data-breakpoint` value on the navigation root overrides `mobileBreakpoint`. Closing the mobile navigation also closes its open disclosure panels.
+
+### Disclosure Keyboard Support
+
+| Key                    | Action                                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------------------------- |
+| `Tab` / `Shift + Tab`  | Uses native document order through buttons and links in expanded panels                           |
+| `Enter` / `Space`      | Toggles a focused button; activates a link and sets its `aria-current="page"`                     |
+| `Escape`               | Closes the nearest open dropdown and returns focus to its controlling button                      |
+| `Arrow Down` / `Right` | Moves forward among top-level links and buttons or panel links; enters an expanded button's panel |
+| `Arrow Up` / `Left`    | Moves backward among top-level links and buttons or panel links                                   |
+| `Home` / `End`         | Moves to the first or last link or button in the current level                                    |
+
+Directional navigation does not wrap. Nested disclosure buttons support native Tab, Enter/Space, Escape, peer closing, and descendant closing; optional arrow, Home, and End behavior for nested buttons is intentionally not included.
+
+Opening a disclosure closes open peers at the same level. Open disclosures also close when focus leaves the navigation or a pointer interaction starts outside it. Use `destroy(menuContainer)` or `destroyAll()` to remove behavior.
 
 ## Configuration
 

@@ -109,4 +109,42 @@ export declare class Menubar {
   destroyAll(): void
 }
 
+/** Configuration options for disclosure navigation. */
+export interface DisclosureConfig {
+  /** CSS class for disclosure navigation containers. */
+  menuSelector?: string
+  /** CSS class used as the outside-click boundary. Falls back to menuSelector. */
+  menuContainer?: string | null
+  /** CSS class for disclosure buttons. */
+  buttonClass?: string
+  /** CSS class for links inside disclosure panels. */
+  linkClass?: string
+  /** CSS class added to initialized disclosure buttons. */
+  controllerClass?: string
+  /** Mobile breakpoint in pixels. */
+  mobileBreakpoint?: number
+  /** ID of the mobile navigation toggle. Mobile behavior is enabled when set. */
+  mobileControlId?: string | null
+  /** Attribute used to override the mobile breakpoint on a menu container. */
+  dataBreakpointAttribute?: string
+}
+
+/** Accessible disclosure navigation with native tab order. */
+export declare class Disclosure {
+  constructor(config?: DisclosureConfig)
+  constructor(context: HTMLElement | Document, config?: DisclosureConfig)
+
+  /** Initialize disclosure navigation roots in the configured context. */
+  init(): Promise<void>
+
+  /** Attach mobile controls to initialized roots when mobileControlId is configured. */
+  attachMobileControls(): Promise<void>
+
+  /** Remove behavior for one initialized navigation root. */
+  destroy(menuContainer: HTMLElement): void
+
+  /** Remove behavior for every root initialized by this instance. */
+  destroyAll(): void
+}
+
 export default Menubar

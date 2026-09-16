@@ -43,6 +43,12 @@
   cursor: pointer;
 }
 
+/* Disclosure arrow indicator */
+.c-menu ul[data-depth='0'] li > .controller .icon {
+  display: inline-block;
+  transition: transform 0.2s ease-in-out;
+}
+
 /* Icon rotation for expanded .controllers */
 .c-menu ul[data-depth='0'] li > .controller[aria-expanded='true'] .icon {
   transform: rotate(180deg);
