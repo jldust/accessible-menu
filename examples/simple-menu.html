@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Disclosure Navigation Example</title>
+    <title>SimpleMenu Navigation Example</title>
     <link rel="stylesheet" href="../src/menu-styles.css" />
     <style>
       body {
@@ -144,9 +144,9 @@
     </nav>
 
     <main>
-      <h1>Disclosure Menu - Keyboard Navigation Demo</h1>
+      <h1>SimpleMenu - Keyboard Navigation Demo</h1>
       <p>
-        This example demonstrates disclosure navigation containing both top-level links and buttons that open simple
+        This example demonstrates SimpleMenu navigation containing both top-level links and buttons that open simple
         dropdowns. Use the navigation above with a pointer or keyboard.
       </p>
 
@@ -190,9 +190,9 @@
     </main>
 
     <script type="module">
-      import { Disclosure } from '../src/index.js'
+      import { SimpleMenu } from '../src/index.js'
 
-      const navigation = new Disclosure({
+      const navigation = new SimpleMenu({
         mobileControlId: 'mobile-toggle',
         mobileBreakpoint: 768,
       })

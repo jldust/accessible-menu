@@ -5,8 +5,8 @@
 
 // Menu types
 export { Menubar } from './menus/Menubar.js'
-export { Disclosure } from './menus/Disclosure.js'
+export { SimpleMenu } from './menus/SimpleMenu.js'
 
 // Export all menus as a named export for convenience
 export * from './menus/Menubar.js'
-export * from './menus/Disclosure.js'
+export * from './menus/SimpleMenu.js'

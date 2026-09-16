@@ -1,5 +1,5 @@
 /**
- * Default configuration for disclosure navigation
+ * Default configuration for SimpleMenu navigation
  */
 const DEFAULT_CONFIG = {
   menuSelector: 'c-menu',
@@ -29,13 +29,13 @@ function getMenus(context, selector) {
 }
 
 /**
- * Disclosure - A configurable accessible disclosure navigation component
+ * SimpleMenu - A configurable accessible navigation component
  *
- * @class Disclosure
+ * @class SimpleMenu
  */
-export class Disclosure {
+export class SimpleMenu {
   /**
-   * Create a Disclosure instance
+   * Create a SimpleMenu instance
    *
    * @param {HTMLElement|Document} context - The root element or document to scope this instance to
    * @param {Object} config - Configuration options
@@ -52,7 +52,7 @@ export class Disclosure {
   }
 
   /**
-   * Initialize all disclosure roots in the configured context
+   * Initialize all SimpleMenu roots in the configured context
    */
   async init() {
     this.attachAriaControls(this.context)
@@ -65,7 +65,7 @@ export class Disclosure {
   }
 
   /**
-   * Attach ARIA controls to disclosure buttons
+   * Attach ARIA controls to SimpleMenu buttons
    *
    * @param {HTMLElement|Document} context - The context to search for menus
    */
@@ -95,7 +95,7 @@ export class Disclosure {
   }
 
   /**
-   * Attach disclosure controls to keyboard
+   * Attach SimpleMenu controls to keyboard
    *
    * @param {HTMLElement|Document} context - The context to search for menus
    */
@@ -105,7 +105,7 @@ export class Disclosure {
     getMenus(context, selector).forEach(menuContainer => {
       if (menuOwners.has(menuContainer)) return
 
-      const menuInstance = new DisclosureController(menuContainer, this.config)
+      const menuInstance = new MenuController(menuContainer, this.config)
       this.menuInstances.set(menuContainer, menuInstance)
       menuOwners.set(menuContainer, menuInstance)
       menuContainers.add(menuContainer)
@@ -133,9 +133,9 @@ export class Disclosure {
   }
 
   /**
-   * Destroy a disclosure instance
+   * Destroy a SimpleMenu instance
    *
-   * @param {HTMLElement} menuContainer - The disclosure root to destroy
+   * @param {HTMLElement} menuContainer - The SimpleMenu root to destroy
    */
   destroy(menuContainer) {
     const instance = this.menuInstances.get(menuContainer)
@@ -154,7 +154,7 @@ export class Disclosure {
   }
 
   /**
-   * Destroy all disclosure instances
+   * Destroy all SimpleMenu instances
    */
   destroyAll() {
     Array.from(this.menuInstances.keys()).forEach(menuContainer => this.destroy(menuContainer))
@@ -162,15 +162,15 @@ export class Disclosure {
 }
 
 /**
- * DisclosureController coordinates buttons and links within one disclosure root
+ * MenuController coordinates buttons and links within one SimpleMenu root
  *
- * @class DisclosureController
+ * @class MenuController
  */
-class DisclosureController {
+class MenuController {
   /**
-   * Create a DisclosureController
+   * Create a MenuController
    *
-   * @param {HTMLElement} menuContainer - The disclosure root element
+   * @param {HTMLElement} menuContainer - The SimpleMenu root element
    * @param {Object} config - Configuration options
    */
   constructor(menuContainer, config) {
@@ -187,15 +187,15 @@ class DisclosureController {
   }
 
   /**
-   * Initialize disclosure buttons and links within the root
+   * Initialize SimpleMenu buttons and links within the root
    */
   initializeMenus() {
     this.menuContainer.querySelectorAll(`button.${this.config.buttonClass}[aria-controls]`).forEach(button => {
-      this.menuButtons.push(new DisclosureButton(button, this.config, this))
+      this.menuButtons.push(new MenuButton(button, this.config, this))
     })
 
     this.menuContainer.querySelectorAll(`a.${this.config.linkClass}`).forEach(link => {
-      this.menuLinks.push(new DisclosureLink(link, this.config, this))
+      this.menuLinks.push(new MenuLinks(link, this.config, this))
     })
 
     this.boundOnFocusout = this.onFocusout.bind(this)
@@ -203,7 +203,7 @@ class DisclosureController {
   }
 
   /**
-   * Close all disclosures when focus leaves the root
+   * Close all SimpleMenus when focus leaves the root
    *
    * @param {FocusEvent} event - The focus event
    */
@@ -212,14 +212,14 @@ class DisclosureController {
   }
 
   /**
-   * Close every disclosure in the root
+   * Close every SimpleMenu panel in the root
    */
   closeAll() {
     this.menuButtons.forEach(button => button.domNode.setAttribute('aria-expanded', 'false'))
   }
 
   /**
-   * Destroy the disclosure controller and clean up listeners
+   * Destroy the SimpleMenu controller and clean up listeners
    */
   destroy() {
     this.menuButtons?.forEach(button => button.destroy())
@@ -233,7 +233,7 @@ class DisclosureController {
   /**
    * Get the submenu controlled by a button
    *
-   * @param {HTMLElement} button - The disclosure button
+   * @param {HTMLElement} button - The SimpleMenu button
    * @returns {HTMLElement|null} The controlled submenu, if found
    */
   getPanel(button) {
@@ -244,7 +244,7 @@ class DisclosureController {
   /**
    * Find the button that controls a submenu
    *
-   * @param {HTMLElement} submenu - The disclosure submenu
+   * @param {HTMLElement} submenu - The SimpleMenu submenu
    * @returns {HTMLElement|undefined} The controlling button, if found
    */
   getController(submenu) {
@@ -292,7 +292,7 @@ class DisclosureController {
   /**
    * Get links directly belonging to a submenu
    *
-   * @param {HTMLElement|null} submenu - The disclosure submenu
+   * @param {HTMLElement|null} submenu - The SimpleMenu submenu
    * @returns {HTMLAnchorElement[]} Links belonging to the submenu
    */
   getLinks(submenu) {
@@ -303,9 +303,9 @@ class DisclosureController {
   }
 
   /**
-   * Close a disclosure and its descendant disclosures
+   * Close a SimpleMenu panel and its descendant panels
    *
-   * @param {HTMLElement} button - The disclosure button
+   * @param {HTMLElement} button - The SimpleMenu button
    */
   close(button) {
     button.setAttribute('aria-expanded', 'false')
@@ -318,10 +318,10 @@ class DisclosureController {
   }
 
   /**
-   * Close the nearest open disclosure and restore controller focus
+   * Close the nearest open SimpleMenu panel and restore controller focus
    *
-   * @param {HTMLElement} element - The focused disclosure element
-   * @returns {boolean} Whether an open disclosure was closed
+   * @param {HTMLElement} element - The focused SimpleMenu element
+   * @returns {boolean} Whether an open SimpleMenu panel was closed
    */
   closeNearestDisclosure(element) {
     const submenu = this.getParentMenu(element)
@@ -347,17 +347,17 @@ class DisclosureController {
 }
 
 /**
- * DisclosureButton handles disclosure button interaction and keyboard navigation
+ * MenuButton handles SimpleMenu button interaction and keyboard navigation
  *
- * @class DisclosureButton
+ * @class MenuButton
  */
-class DisclosureButton {
+class MenuButton {
   /**
-   * Create a DisclosureButton
+   * Create a MenuButton
    *
-   * @param {HTMLElement} domNode - The disclosure button
+   * @param {HTMLElement} domNode - The SimpleMenu button
    * @param {Object} config - Configuration options
-   * @param {DisclosureController} controller - The owning controller
+   * @param {MenuController} controller - The owning controller
    */
   constructor(domNode, config, controller) {
     this.domNode = domNode
@@ -371,7 +371,7 @@ class DisclosureButton {
   }
 
   /**
-   * Toggle the disclosure button
+   * Toggle the SimpleMenu button
    */
   onClick() {
     if (this.domNode.getAttribute('aria-expanded') === 'true') {
@@ -389,7 +389,7 @@ class DisclosureButton {
   }
 
   /**
-   * Handle keyboard input on the disclosure button
+   * Handle keyboard input on the SimpleMenu button
    *
    * @param {KeyboardEvent} event - The keyboard event
    */
@@ -414,7 +414,7 @@ class DisclosureButton {
   }
 
   /**
-   * Destroy the disclosure button and clean up listeners
+   * Destroy the SimpleMenu button and clean up listeners
    */
   destroy() {
     this.domNode.removeEventListener('click', this.boundOnClick)
@@ -423,17 +423,17 @@ class DisclosureButton {
 }
 
 /**
- * DisclosureLink handles disclosure link interaction and keyboard navigation
+ * MenuLinks handles SimpleMenu link interaction and keyboard navigation
  *
- * @class DisclosureLink
+ * @class MenuLinks
  */
-class DisclosureLink {
+class MenuLinks {
   /**
-   * Create a DisclosureLink instance
+   * Create a MenuLinks instance
    *
-   * @param {HTMLAnchorElement} domNode - The disclosure link
+   * @param {HTMLAnchorElement} domNode - The SimpleMenu link
    * @param {Object} config - Configuration options
-   * @param {DisclosureController} controller - The owning controller
+   * @param {MenuController} controller - The owning controller
    */
   constructor(domNode, config, controller) {
     this.domNode = domNode
@@ -445,7 +445,7 @@ class DisclosureLink {
   }
 
   /**
-   * Handle keyboard input on the disclosure link
+   * Handle keyboard input on the SimpleMenu link
    *
    * @param {KeyboardEvent} event - The keyboard event
    */
@@ -470,7 +470,7 @@ class DisclosureLink {
   }
 
   /**
-   * Destroy the disclosure link and clean up listeners
+   * Destroy the SimpleMenu link and clean up listeners
    */
   destroy() {
     this.domNode.removeEventListener('keydown', this.boundOnKeydown)
@@ -509,4 +509,4 @@ function navigateItems(event, currentItem, items) {
   target?.focus()
 }
 
-export default Disclosure
+export default SimpleMenu

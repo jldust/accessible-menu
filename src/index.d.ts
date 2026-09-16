@@ -109,8 +109,8 @@ export declare class Menubar {
   destroyAll(): void
 }
 
-/** Configuration options for disclosure navigation. */
-export interface DisclosureConfig {
+/** Configuration options for SimpleMenu disclosure navigation. */
+export interface SimpleMenuConfig {
   /** CSS class for disclosure navigation containers. */
   menuSelector?: string
   /** CSS class used as the outside-click boundary. Falls back to menuSelector. */
@@ -129,10 +129,10 @@ export interface DisclosureConfig {
   dataBreakpointAttribute?: string
 }
 
-/** Accessible disclosure navigation with native tab order. */
-export declare class Disclosure {
-  constructor(config?: DisclosureConfig)
-  constructor(context: HTMLElement | Document, config?: DisclosureConfig)
+/** SimpleMenu provides accessible disclosure navigation with native tab order. */
+export declare class SimpleMenu {
+  constructor(config?: SimpleMenuConfig)
+  constructor(context: HTMLElement | Document, config?: SimpleMenuConfig)
 
   /** Initialize disclosure navigation roots in the configured context. */
   init(): Promise<void>

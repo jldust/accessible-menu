@@ -282,10 +282,12 @@ describe('Menubar', () => {
       const localMenu = new Menubar(document, { buttonClass: 'menu__link', linkClass: 'menu__link' })
       localMenu.init()
 
-      const aboutBtn = Array.from(localContainer.querySelectorAll('button.menu__link'))
-        .find(btn => btn.getAttribute('aria-label') === 'About')
-      const servicesBtn = Array.from(localContainer.querySelectorAll('button.menu__link'))
-        .find(btn => btn.getAttribute('aria-label') === 'Services')
+      const aboutBtn = Array.from(localContainer.querySelectorAll('button.menu__link')).find(
+        btn => btn.getAttribute('aria-label') === 'About',
+      )
+      const servicesBtn = Array.from(localContainer.querySelectorAll('button.menu__link')).find(
+        btn => btn.getAttribute('aria-label') === 'Services',
+      )
 
       // Open About's submenu with ArrowDown, then simulate focus landing on first subitem
       const downEvent = new KeyboardEvent('keydown', { key: 'ArrowDown' })
@@ -337,8 +339,9 @@ describe('Menubar', () => {
       const localMenu = new Menubar(document, { buttonClass: 'menu__link', linkClass: 'menu__link' })
       localMenu.init()
 
-      const aboutBtn = Array.from(localContainer.querySelectorAll('button.menu__link'))
-        .find(btn => btn.getAttribute('aria-label') === 'About')
+      const aboutBtn = Array.from(localContainer.querySelectorAll('button.menu__link')).find(
+        btn => btn.getAttribute('aria-label') === 'About',
+      )
       const homeLink = localContainer.querySelector('[data-depth="0"] > li > a.menu__link')
 
       // Open About's submenu with ArrowDown, then simulate focus landing on first subitem

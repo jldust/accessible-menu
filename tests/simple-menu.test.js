@@ -1,4 +1,4 @@
-import { Disclosure } from '../src/index.js'
+import { SimpleMenu } from '../src/index.js'
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -14,8 +14,8 @@ const keydown = (element, key, options = {}) => {
   element.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...options }))
 }
 
-describe('Disclosure', () => {
-  let disclosure
+describe('SimpleMenu', () => {
+  let simpleMenu
   let root
 
   beforeEach(() => {
@@ -54,12 +54,12 @@ describe('Disclosure', () => {
       <button id="outside">Outside</button>
     `
     root = document.querySelector('.c-menu')
-    disclosure = new Disclosure()
-    disclosure.init()
+    simpleMenu = new SimpleMenu()
+    simpleMenu.init()
   })
 
   afterEach(() => {
-    disclosure?.destroyAll()
+    simpleMenu?.destroyAll()
     document.body.innerHTML = ''
   })
 
@@ -89,7 +89,7 @@ describe('Disclosure', () => {
   })
 
   it('keeps peer disclosures open on mobile', () => {
-    disclosure.destroyAll()
+    simpleMenu.destroyAll()
     window.matchMedia.mockImplementation(query => ({
       matches: true,
       media: query,
@@ -97,8 +97,8 @@ describe('Disclosure', () => {
       removeEventListener: jest.fn(),
     }))
 
-    disclosure = new Disclosure()
-    disclosure.init()
+    simpleMenu = new SimpleMenu()
+    simpleMenu.init()
 
     const [products, , company] = root.querySelectorAll('.menu__button')
     products.click()
@@ -147,7 +147,7 @@ describe('Disclosure', () => {
   })
 
   it('moves through top-level links and disclosure buttons in DOM order', () => {
-    disclosure.destroyAll()
+    simpleMenu.destroyAll()
     document.body.innerHTML = `
       <nav class="c-menu">
         <ul>
@@ -161,8 +161,8 @@ describe('Disclosure', () => {
       </nav>
     `
     root = document.querySelector('.c-menu')
-    disclosure = new Disclosure()
-    disclosure.init()
+    simpleMenu = new SimpleMenu()
+    simpleMenu.init()
 
     const home = root.querySelector('a[href="#home"]')
     const products = root.querySelector('.menu__button')
@@ -268,8 +268,8 @@ describe('Disclosure', () => {
     expect(products.getAttribute('aria-expanded')).toBe('false')
   })
 
-  it('keeps separate Disclosure instances isolated and prevents duplicate root listeners', () => {
-    disclosure.destroyAll()
+  it('keeps separate SimpleMenu instances isolated and prevents duplicate root listeners', () => {
+    simpleMenu.destroyAll()
     document.body.innerHTML = `
       <nav class="c-menu" id="primary-menu">
         <button class="menu__button">Primary</button>
@@ -283,9 +283,9 @@ describe('Disclosure', () => {
 
     const primaryRoot = document.getElementById('primary-menu')
     const secondaryRoot = document.getElementById('secondary-menu')
-    const primary = new Disclosure(primaryRoot)
-    const secondary = new Disclosure(secondaryRoot)
-    const duplicate = new Disclosure(primaryRoot)
+    const primary = new SimpleMenu(primaryRoot)
+    const secondary = new SimpleMenu(secondaryRoot)
+    const duplicate = new SimpleMenu(primaryRoot)
 
     primary.init()
     secondary.init()
@@ -312,22 +312,22 @@ describe('Disclosure', () => {
   it('is idempotent and removes listeners on destroy', () => {
     const products = root.querySelector('.menu__button')
 
-    disclosure.init()
+    simpleMenu.init()
     products.click()
     expect(products.getAttribute('aria-expanded')).toBe('true')
 
-    disclosure.destroy(root)
+    simpleMenu.destroy(root)
     products.click()
     expect(products.getAttribute('aria-expanded')).toBe('true')
 
-    disclosure.init()
+    simpleMenu.init()
     expect(products.getAttribute('aria-expanded')).toBe('false')
     products.click()
     expect(products.getAttribute('aria-expanded')).toBe('true')
   })
 
   it('supports a root context and custom classes', () => {
-    disclosure.destroyAll()
+    simpleMenu.destroyAll()
     document.body.innerHTML = `
       <nav class="custom-root">
         <button class="custom-button">Open</button>
@@ -335,21 +335,21 @@ describe('Disclosure', () => {
       </nav>
     `
     root = document.querySelector('.custom-root')
-    disclosure = new Disclosure(root, {
+    simpleMenu = new SimpleMenu(root, {
       menuSelector: 'custom-root',
       buttonClass: 'custom-button',
       linkClass: 'custom-link',
       controllerClass: 'custom-controller',
     })
 
-    disclosure.init()
+    simpleMenu.init()
 
     expect(root.querySelector('.custom-button').classList.contains('custom-controller')).toBe(true)
-    expect(disclosure.menuInstances.has(root)).toBe(true)
+    expect(simpleMenu.menuInstances.has(root)).toBe(true)
   })
 
   it('supports a mobile toggle and an authored mobile breakpoint', async () => {
-    disclosure.destroyAll()
+    simpleMenu.destroyAll()
     document.body.innerHTML = `
       <button id="mobile-toggle" aria-expanded="false">Menu</button>
       <nav class="c-menu" data-breakpoint="640">
@@ -362,13 +362,13 @@ describe('Disclosure', () => {
       </nav>
     `
     root = document.querySelector('.c-menu')
-    disclosure = new Disclosure(document, { mobileControlId: 'mobile-toggle', mobileBreakpoint: 720 })
+    simpleMenu = new SimpleMenu(document, { mobileControlId: 'mobile-toggle', mobileBreakpoint: 720 })
 
-    await disclosure.init()
+    await simpleMenu.init()
 
     const mobileToggle = document.getElementById('mobile-toggle')
     const disclosureButton = root.querySelector('.menu__button')
-    const mobileController = disclosure.menuInstances.get(root).mobileController
+    const mobileController = simpleMenu.menuInstances.get(root).mobileController
 
     expect(root.classList.contains('c-menu-mobile')).toBe(true)
     expect(mobileToggle.classList.contains('js-mobile-toggle')).toBe(true)
@@ -387,7 +387,7 @@ describe('Disclosure', () => {
   })
 
   it('closes the mobile menu on Escape and removes mobile listeners on destroy', async () => {
-    disclosure.destroyAll()
+    simpleMenu.destroyAll()
     document.body.innerHTML = `
       <button id="mobile-toggle" aria-expanded="false">Menu</button>
       <nav class="c-menu">
@@ -397,8 +397,8 @@ describe('Disclosure', () => {
       </nav>
     `
     root = document.querySelector('.c-menu')
-    disclosure = new Disclosure(document, { mobileControlId: 'mobile-toggle', mobileBreakpoint: 720 })
-    await disclosure.init()
+    simpleMenu = new SimpleMenu(document, { mobileControlId: 'mobile-toggle', mobileBreakpoint: 720 })
+    await simpleMenu.init()
 
     const mobileToggle = document.getElementById('mobile-toggle')
     const home = root.querySelector('.menu__link')
@@ -409,7 +409,7 @@ describe('Disclosure', () => {
     expect(mobileToggle.getAttribute('aria-expanded')).toBe('false')
     expect(document.activeElement).toBe(mobileToggle)
 
-    disclosure.destroy(root)
+    simpleMenu.destroy(root)
     mobileToggle.click()
     expect(mobileToggle.getAttribute('aria-expanded')).toBe('false')
   })

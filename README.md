@@ -1,10 +1,10 @@
 # @jldust/accessible-menu
 
-A highly configurable, accessible menu component that supports keyboard navigation, mobile controls, and ARIA attributes.
+Highly configurable, accessible menu components that support keyboard navigation, mobile controls, and ARIA attributes.
 
 ## Current Support
 
-This library implements the **[Menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/)** and the **[Disclosure navigation pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/)** from the WAI-ARIA Authoring Practices Guide.
+This library implements the **AdvancedMenu pattern (based on the [WAI-ARIA menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/))** and the **SimpleMneu navigation pattern (based on the [WAI-ARIA disclosure pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/))** from the WAI-ARIA Authoring Practices Guide.
 
 ### Future Plans
 
@@ -33,10 +33,10 @@ npm install @jldust/accessible-menu
 ### ES6 Modules
 
 ```javascript
-import { Menubar } from '@jldust/accessible-menu'
+import { AdvancedMenu } from '@jldust/accessible-menu'
 
 // Initialize with default settings
-const menu = new Menubar()
+const menu = new AdvancedMenu()
 await menu.init()
 ```
 
@@ -51,18 +51,18 @@ await menu.init()
 ```
 
 ```javascript
-import { Menubar } from '@jldust/accessible-menu'
+import { AdvancedMenu } from '@jldust/accessible-menu'
 
-const menu = new Menubar()
+const menu = new AdvancedMenu()
 await menu.init()
 ```
 
 ### CommonJS
 
 ```javascript
-const { Menubar } = require('@jldust/accessible-menu')
+const { AdvancedMenu } = require('@jldust/accessible-menu')
 
-const menu = new Menubar()
+const menu = new AdvancedMenu()
 await menu.init()
 ```
 
@@ -71,14 +71,14 @@ await menu.init()
 ```html
 <script src="node_modules/@jldust/accessible-menu/dist/index.umd.min.js"></script>
 <script>
-  const menu = new AccessibleMenu.Menubar()
+  const menu = new AccessibleMenu.AdvancedMenu()
   await menu.init()
 </script>
 ```
 
-## Disclosure Navigation
+## SimpleMenu Navigation
 
-Use `Disclosure` for simple navigation menus. It does not add menu roles, manage `tabindex`, or include support mega-menu behavior. Mobile navigation is enabled by providing `mobileControlId`.
+Use `SimpleMenu` for simple navigation menus. It does not add menu roles, manage `tabindex`, or include support mega-menu behavior. Mobile navigation is enabled by providing `mobileControlId`.
 
 ```html
 <button id="mobile-toggle" aria-expanded="false">Menu</button>
@@ -97,16 +97,16 @@ Use `Disclosure` for simple navigation menus. It does not add menu roles, manage
 ```
 
 ```javascript
-import { Disclosure } from '@jldust/accessible-menu'
+import { SimpleMenu } from '@jldust/accessible-menu'
 
-const navigation = new Disclosure({
+const navigation = new SimpleMenu({
   mobileControlId: 'mobile-toggle',
   mobileBreakpoint: 768,
 })
 await navigation.init()
 ```
 
-Disclosure buttons must be `button` elements followed immediately by the panel they control. Initialization sets `aria-controls`, `aria-expanded="false"`, and the configured controller class. Existing panel IDs are preserved; missing IDs are generated.
+SimpleMenu buttons must be `button` elements followed immediately by the panel they control. Initialization sets `aria-controls`, `aria-expanded="false"`, and the configured controller class. Existing panel IDs are preserved; missing IDs are generated.
 
 | Option                    | Type             | Default             |
 | ------------------------- | ---------------- | ------------------- |
@@ -121,7 +121,7 @@ Disclosure buttons must be `button` elements followed immediately by the panel t
 
 The mobile toggle must provide its initial `aria-expanded="false"` state. An authored `data-breakpoint` value on the navigation root overrides `mobileBreakpoint`. Closing the mobile navigation also closes its open disclosure panels.
 
-### Disclosure Keyboard Support
+### SimpleMenu Keyboard Support
 
 | Key                    | Action                                                                                            |
 | ---------------------- | ------------------------------------------------------------------------------------------------- |
@@ -141,9 +141,9 @@ Opening a disclosure closes open peers at the same level. Open disclosures also 
 ### Custom Configuration
 
 ```javascript
-import { Menubar } from '@jldust/accessible-menu'
+import { AdvancedMenu } from '@jldust/accessible-menu'
 
-const menu = new Menubar({
+const menu = new AdvancedMenu({
   menuSelector: 'my-menu',
   buttonClass: 'my-menu__button',
   linkClass: 'my-menu__link',
