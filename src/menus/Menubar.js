@@ -135,17 +135,14 @@ export class Menubar {
       }
 
       const submenu = element.nextElementSibling
-      const isLabelSpan = element.classList.contains(this.config.labelClass)
+      const isLabel = element.classList.contains(this.config.labelClass)
 
-      if (isLabelSpan) {
+      if (isLabel) {
         // Non-controller span: visual label for an always-visible list, regardless of controllerTags
         if (submenu) {
           const labelId = `label-${id}`
           element.setAttribute('id', labelId)
           submenu.setAttribute('aria-labelledby', labelId)
-          const submenuId = `panel-${id}`
-          submenu.setAttribute('id', submenuId)
-          element.setAttribute('data-menu-controls', submenuId)
         }
       } else if (this.isController(element)) {
         element.setAttribute('aria-haspopup', 'true')
@@ -712,6 +709,13 @@ class MenuLinks {
     if (menuNode.id) {
       const controller = menuContainer.querySelector(`[data-menu-controls="${menuNode.id}"]`)
       if (controller) return controller
+    }
+
+    // Labels aren't controllers, so resolve via aria-labelledby instead
+    const labelledbyId = menuNode.getAttribute('aria-labelledby')
+    if (labelledbyId) {
+      const label = document.getElementById(labelledbyId)
+      if (label) return label
     }
 
     // Mega menu fallback: the ul is nested inside a container div that the button controls
