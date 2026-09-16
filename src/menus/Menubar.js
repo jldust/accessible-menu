@@ -143,6 +143,9 @@ export class Menubar {
           const labelId = `label-${id}`
           element.setAttribute('id', labelId)
           submenu.setAttribute('aria-labelledby', labelId)
+          const submenuId = `panel-${id}`
+          submenu.setAttribute('id', submenuId)
+          element.setAttribute('data-menu-controls', submenuId)
         }
       } else if (this.isController(element)) {
         element.setAttribute('aria-haspopup', 'true')
@@ -424,6 +427,12 @@ class MenuLinks {
    * Uses circular navigation to wrap to the last item if currently on the first item.
    */
   handleUpArrow(target) {
+    const parentMenu = target.closest('ul[data-depth]')
+    const menuDepth = parentMenu ? parseInt(parentMenu.getAttribute('data-depth')) : 0
+
+    // Top-level link with no submenu simply return.
+    if (menuDepth === 0 && target?.tagName === 'A' && !target.nextElementSibling) return
+
     const currentIndex = this.menuitemNodes.indexOf(target)
     const prevItem = this.getPreviousItem(this.menuitemNodes, currentIndex)
     if (prevItem) {
@@ -457,8 +466,8 @@ class MenuLinks {
       }
     }
 
-    // If we are at the top level and the target is a link, do nothing.
-    if (menuDepth === 0 && target?.tagName === 'A') return
+    // Top-level link with no submenu simply return.
+    if (menuDepth === 0 && target?.tagName === 'A' && !target.nextElementSibling) return
 
     // Build selector for controller options — include mega menu container panels
     const controller = this.config.controllerTags
@@ -478,6 +487,13 @@ class MenuLinks {
       const next = index + 1 < focusableElements.length ? focusableElements[index + 1] : focusableElements[0]
 
       next.focus()
+    } else {
+      // No active controller, fall back to sibling navigation.
+      const currentIndex = this.menuitemNodes.indexOf(target)
+      const nextItem = this.getNextItem(this.menuitemNodes, currentIndex)
+      if (nextItem) {
+        nextItem.focus()
+      }
     }
   }
 
@@ -655,6 +671,12 @@ class MenuLinks {
       // If parent menu item is in the Menubar (data-depth="0")
       if (parentUl && parentUl.dataset.depth === '0') {
         this.navigateToTopLevelItem(parentMenuItem, 'previous', menuContainer)
+      } else if (menuController.classList.contains(this.config.labelClass)) {
+        // Labels aren't focusable, find next top-level item instead.
+        const controllerItem = this.findControllerItem()
+        if (controllerItem) {
+          this.navigateToTopLevelItem(controllerItem, 'previous', menuContainer)
+        }
       } else {
         // Focus on the parent menu item and close submenu
         menuController.setAttribute('aria-expanded', 'false')
@@ -753,11 +775,16 @@ class MenuLinks {
     }
 
     const targetMenuItem = topLevelItems[targetIndex]
-    const targetMenuLink =
+    let targetMenuLink =
       targetMenuItem.querySelector(`:scope > .${this.config.linkClass}`) ??
       targetMenuItem.querySelector(`:scope > .${this.config.buttonClass}`)
 
     this.closeAllButtons(menuContainer)
+
+    // Labels aren't focusable, move focus into the first item of their submenu instead.
+    if (targetMenuLink?.classList.contains(this.config.labelClass)) {
+      targetMenuLink = targetMenuLink.nextElementSibling?.querySelector(`.${this.config.linkClass}`) ?? targetMenuLink
+    }
 
     // Focus on the target menu item
     targetMenuLink.focus()
@@ -828,10 +855,15 @@ class MenuLinks {
     }
 
     // Select actual focus element
-    siblingToFocus =
+    let focusTarget =
       siblingToFocus.querySelector(`:scope > .${this.config.linkClass}`) ??
       siblingToFocus.querySelector(`:scope > .${this.config.buttonClass}`)
-    siblingToFocus?.focus()
+
+    // Labels aren't focusable, move focus into the first item of their submenu instead.
+    if (focusTarget?.classList.contains(this.config.labelClass)) {
+      focusTarget = focusTarget.nextElementSibling?.querySelector(`.${this.config.linkClass}`) ?? focusTarget
+    }
+    focusTarget?.focus()
   }
 
   /**
