@@ -665,7 +665,7 @@ class MenuLinks {
       const parentMenuItem = menuController.closest(`.${this.config.itemClass}`)
       const parentUl = parentMenuItem?.closest('ul[data-depth]')
 
-      // If parent menu item is in the Menubar (data-depth="0")
+      // If parent menu item is in the menu container (data-depth="0")
       if (parentUl && parentUl.dataset.depth === '0') {
         this.navigateToTopLevelItem(parentMenuItem, 'previous', menuContainer)
       } else if (menuController.classList.contains(this.config.labelClass)) {

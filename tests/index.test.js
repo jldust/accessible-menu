@@ -15,7 +15,7 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-describe('AdvanceMenu', () => {
+describe('AdvancedMenu', () => {
   let menuContainer
 
   beforeEach(() => {
