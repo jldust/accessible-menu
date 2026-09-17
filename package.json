@@ -7,13 +7,10 @@
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/",
-    "src/",
-    "README.md",
-    "LICENSE"
+    "dist/"
   ],
   "scripts": {
-    "build": "rollup -c && cp src/index.d.ts dist/index.d.ts && cp src/menu-styles.css dist/menu-styles.css",
+    "build": "rollup -c && cp src/index.d.ts dist/index.d.ts && cp src/menu-styles.css dist/menu-styles.css && cp README.md LICENSE dist/",
     "dev": "npm run build && concurrently \"rollup -c -w\" \"python3 -m http.server 3000\" && open --new http://localhost:3000/examples/basic.html",
     "test": "jest",
     "lint": "eslint src/**/*.js",
