@@ -139,13 +139,13 @@
     <script>
       // Initialize the menu with default settings
       /*
-      const menu = new AccessibleMenu.Menubar()
+      const menu = new AccessibleMenu.AdvancedMenu()
       await menu.init()
       */
       // Or with custom configuration:
 
       ;(async () => {
-        const menu = new AccessibleMenu.Menubar({
+        const menu = new AccessibleMenu.AdvancedMenu({
           menuSelector: 'c-menu',
           buttonClass: 'menu__link',
           linkClass: 'menu__link',

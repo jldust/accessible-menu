@@ -40,13 +40,13 @@ const DEFAULT_CONFIG = {
 }
 
 /**
- * Menubar - A configurable accessible menu component
+ * AdvanceMenu - A configurable accessible menu component
  *
- * @class Menubar
+ * @class AdvanceMenu
  */
 export class AdvanceMenu {
   /**
-   * Create an Menubar instance
+  * Create an AdvanceMenu instance
    * @param {HTMLElement|Document} context - The root element or document to scope this instance to
    * @param {Object} config - Configuration options
    * @param {string} config.menuSelector - CSS selector for menu containers
@@ -61,7 +61,7 @@ export class AdvanceMenu {
    * @param {string} config.mobileControlId - ID of the mobile menu control button. When set, mobile controls are initialized.
    */
   constructor(context = document, config = {}) {
-    // Allow calling as new Menubar(config) without an explicit context
+    // Allow calling as new AdvanceMenu(config) without an explicit context
     if (context !== null && typeof context === 'object' && !(context instanceof Node)) {
       config = context
       context = document
@@ -77,7 +77,7 @@ export class AdvanceMenu {
   async init() {
     if (arguments.length > 0) {
       console.warn(
-        'Menubar.init() does not accept arguments. Pass the context element to the Menubar constructor instead: new Menubar(element, config)',
+        'AdvanceMenu.init() does not accept arguments. Pass the context element to the AdvanceMenu constructor instead: new AdvanceMenu(element, config)',
       )
     }
     this.attachAriaControls(this.context)

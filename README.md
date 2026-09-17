@@ -4,7 +4,7 @@ Highly configurable, accessible menu components that support keyboard navigation
 
 ## Current Support
 
-This library implements the **AdvancedMenu pattern (based on the [WAI-ARIA menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/))** and the **SimpleMneu navigation pattern (based on the [WAI-ARIA disclosure pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/))** from the WAI-ARIA Authoring Practices Guide.
+This library implements the **AdvancedMenu pattern (based on the [WAI-ARIA menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/))** and the **SimpleMenu navigation pattern (based on the [WAI-ARIA disclosure pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/))** from the WAI-ARIA Authoring Practices Guide.
 
 ### Future Plans
 

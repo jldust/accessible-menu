@@ -38,14 +38,14 @@ npm install @jldust/accessible-menu
 ### 2. JavaScript Initialization
 
 ```javascript
-import { Menubar } from '@jldust/accessible-menu'
+import { AdvancedMenu } from '@jldust/accessible-menu'
 
 // Basic initialization
-const menu = new Menubar()
+const menu = new AdvancedMenu()
 await menu.init()
 
 // Or with custom configuration
-const menu = new Menubar({
+const menu = new AdvancedMenu({
   menuSelector: 'my-menu',
   buttonClass: 'my-button',
   linkClass: 'my-link',
@@ -57,7 +57,7 @@ await menu.init()
 ### 3. Custom Configuration Example
 
 ```javascript
-const customMenu = new Menubar({
+const customMenu = new AdvancedMenu({
   menuSelector: 'navigation', // Your menu container class
   buttonClass: 'nav-button', // Your button class
   linkClass: 'nav-link', // Your link class

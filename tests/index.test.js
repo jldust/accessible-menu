@@ -1,4 +1,4 @@
-import { Menubar } from '../src/index.js'
+import { AdvancedMenu } from '../src/index.js'
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {
@@ -15,7 +15,7 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-describe('Menubar', () => {
+describe('AdvanceMenu', () => {
   let menuContainer
 
   beforeEach(() => {
@@ -85,7 +85,7 @@ describe('Menubar', () => {
 
   describe('Constructor and Configuration', () => {
     it('should use default configuration when no config provided', () => {
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       expect(menu.config.menuSelector).toBe('c-menu')
       expect(menu.config.buttonClass).toBe('menu__button')
       expect(menu.config.linkClass).toBe('menu__link')
@@ -100,7 +100,7 @@ describe('Menubar', () => {
         mobileBreakpoint: 1024,
         buttonClass: 'custom-button',
       }
-      const menu = new Menubar(document, customConfig)
+      const menu = new AdvancedMenu(document, customConfig)
 
       expect(menu.config.menuSelector).toBe('custom-menu')
       expect(menu.config.mobileBreakpoint).toBe(1024)
@@ -109,7 +109,7 @@ describe('Menubar', () => {
     })
 
     it('should initialize empty menuInstances Map', () => {
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       expect(menu.menuInstances).toBeInstanceOf(Map)
       expect(menu.menuInstances.size).toBe(0)
     })
@@ -117,7 +117,7 @@ describe('Menubar', () => {
 
   describe('ARIA Controls Initialization', () => {
     it('should set ARIA attributes on menu buttons', () => {
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       menu.init()
 
       const button = menuContainer.querySelector('button')
@@ -128,7 +128,7 @@ describe('Menubar', () => {
     })
 
     it('should handle menu items without span elements', () => {
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       menu.init()
 
       // Since we don't have span elements in the basic structure,
@@ -151,7 +151,7 @@ describe('Menubar', () => {
         </nav>
       `
 
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       expect(() => menu.init()).not.toThrow()
 
       const link = document.querySelector('a')
@@ -161,7 +161,7 @@ describe('Menubar', () => {
 
   describe('Menu Controller Initialization', () => {
     it('should create MenuController instances for each menu', () => {
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       menu.init()
 
       expect(menu.menuInstances.has(menuContainer)).toBe(true)
@@ -169,7 +169,7 @@ describe('Menubar', () => {
     })
 
     it('should use custom breakpoint from data attribute', () => {
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       menu.init()
 
       const instance = menu.menuInstances.get(menuContainer)
@@ -179,7 +179,7 @@ describe('Menubar', () => {
 
   describe('Mobile Menu Controls', () => {
     it('should initialize mobile menu controls when present', () => {
-      const menu = new Menubar(document, { mobileControlId: 'mobile-toggle' })
+      const menu = new AdvancedMenu(document, { mobileControlId: 'mobile-toggle' })
       menu.init()
 
       const mobileButton = document.getElementById('mobile-toggle')
@@ -192,7 +192,7 @@ describe('Menubar', () => {
     let menu, button
 
     beforeEach(() => {
-      menu = new Menubar()
+      menu = new AdvancedMenu()
       menu.init()
       button = menuContainer.querySelector('button')
     })
@@ -279,7 +279,7 @@ describe('Menubar', () => {
         </nav>
       `
       const localContainer = document.querySelector('.c-menu')
-      const localMenu = new Menubar(document, { buttonClass: 'menu__link', linkClass: 'menu__link' })
+      const localMenu = new AdvancedMenu(document, { buttonClass: 'menu__link', linkClass: 'menu__link' })
       localMenu.init()
 
       const aboutBtn = Array.from(localContainer.querySelectorAll('button.menu__link')).find(
@@ -336,7 +336,7 @@ describe('Menubar', () => {
         </nav>
       `
       const localContainer = document.querySelector('.c-menu')
-      const localMenu = new Menubar(document, { buttonClass: 'menu__link', linkClass: 'menu__link' })
+      const localMenu = new AdvancedMenu(document, { buttonClass: 'menu__link', linkClass: 'menu__link' })
       localMenu.init()
 
       const aboutBtn = Array.from(localContainer.querySelectorAll('button.menu__link')).find(
@@ -366,7 +366,7 @@ describe('Menubar', () => {
     let menu, links, buttons
 
     beforeEach(() => {
-      menu = new Menubar()
+      menu = new AdvancedMenu()
       menu.init()
       // Get only top-level links for navigation testing
       links = Array.from(menuContainer.querySelectorAll('ul[data-depth="0"] > li > .menu__link'))
@@ -406,7 +406,7 @@ describe('Menubar', () => {
     let menu, mobileButton
 
     beforeEach(async () => {
-      menu = new Menubar(document, { mobileControlId: 'mobile-toggle', mobileBreakpoint: 768 })
+      menu = new AdvancedMenu(document, { mobileControlId: 'mobile-toggle', mobileBreakpoint: 768 })
       await menu.init()
       mobileButton = document.getElementById('mobile-toggle')
     })
@@ -452,7 +452,7 @@ describe('Menubar', () => {
 
   describe('Instance Management', () => {
     it('should destroy specific menu instance', () => {
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       menu.init()
 
       expect(menu.menuInstances.has(menuContainer)).toBe(true)
@@ -463,7 +463,7 @@ describe('Menubar', () => {
     })
 
     it('should destroy all menu instances', () => {
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       menu.init()
 
       // Add another menu
@@ -530,7 +530,7 @@ describe('Menubar', () => {
     })
 
     it('should handle deeply nested menu structures', () => {
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       menu.init()
 
       const deepButtons = menuContainer.querySelectorAll('button')
@@ -542,7 +542,7 @@ describe('Menubar', () => {
     })
 
     it('should handle span elements with submenus', () => {
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       menu.init()
 
       const span = menuContainer.querySelector('span')
@@ -565,7 +565,7 @@ describe('Menubar', () => {
         </nav>
       `
 
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       expect(() => menu.init()).not.toThrow()
     })
 
@@ -580,7 +580,7 @@ describe('Menubar', () => {
         </nav>
       `
 
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       menu.init()
 
       const button = document.querySelector('button')
@@ -589,7 +589,7 @@ describe('Menubar', () => {
     })
 
     it('should prevent default behavior on relevant keyboard events', () => {
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       menu.init()
 
       const button = menuContainer.querySelector('button')
@@ -604,7 +604,7 @@ describe('Menubar', () => {
 
   describe('Accessibility Features', () => {
     it('should maintain proper ARIA states during interaction', () => {
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       menu.init()
 
       const button = menuContainer.querySelector('button')
@@ -623,7 +623,7 @@ describe('Menubar', () => {
     })
 
     it('should set proper aria-label from button text content', () => {
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       menu.init()
 
       const button = menuContainer.querySelector('button')
@@ -631,7 +631,7 @@ describe('Menubar', () => {
     })
 
     it('should maintain focus management during navigation', () => {
-      const menu = new Menubar()
+      const menu = new AdvancedMenu()
       menu.init()
 
       const button = menuContainer.querySelector('button')
@@ -689,7 +689,7 @@ describe('Menubar', () => {
     beforeEach(() => {
       document.body.innerHTML = MEGA_HTML
       megaContainer = document.querySelector('.c-menu')
-      menu = new Menubar(document, {
+      menu = new AdvancedMenu(document, {
         megaMenuClass: 'c-mega-menu',
         megaMenuContainerClass: 'c-mega-menu__container',
       })
@@ -804,7 +804,7 @@ describe('Menubar', () => {
           </ul>
         </nav>
       `
-      const menu = new Menubar(document, {
+      const menu = new AdvancedMenu(document, {
         megaMenuClass: 'c-mega-menu',
         megaMenuContainerClass: 'c-mega-menu__container',
       })
@@ -829,7 +829,7 @@ describe('Menubar', () => {
           </ul>
         </nav>
       `
-      const menu = new Menubar(document, {
+      const menu = new AdvancedMenu(document, {
         megaMenuClass: 'c-mega-menu',
         megaMenuContainerClass: 'c-mega-menu__container',
       })
@@ -870,7 +870,7 @@ describe('Menubar', () => {
           </ul>
         </nav>
       `
-      const menu = new Menubar(document, {
+      const menu = new AdvancedMenu(document, {
         megaMenuClass: 'c-mega-menu',
         megaMenuContainerClass: 'c-mega-menu__container',
       })

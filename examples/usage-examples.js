@@ -1,7 +1,7 @@
-import { Menubar } from '@jldust/accessible-menu'
+import { AdvancedMenu } from '@jldust/accessible-menu'
 
 // Example 1: Using with custom CSS classes and mobile breakpoint
-const customMenu = new Menubar({
+const customMenu = new AdvancedMenu({
   menuSelector: '.my-navigation',
   buttonClass: 'nav-button',
   linkClass: 'nav-link',
@@ -17,14 +17,14 @@ const specificContainer = document.querySelector('.header-menu')
 await customMenu.init(specificContainer)
 
 // Example 3: Using with different configurations for different menus
-const mainMenu = new Menubar({
+const mainMenu = new AdvancedMenu({
   menuSelector: '.main-menu',
   buttonClass: 'main-menu__button',
   linkClass: 'main-menu__link',
   mobileBreakpoint: 768,
 })
 
-const footerMenu = new Menubar({
+const footerMenu = new AdvancedMenu({
   menuSelector: '.footer-menu',
   buttonClass: 'footer-menu__button',
   linkClass: 'footer-menu__link',

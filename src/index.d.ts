@@ -1,5 +1,5 @@
 /**
- * Configuration options for the Menubar
+ * Configuration options for the AdvancedMenu
  * @interface MenuConfig
  */
 export interface MenuConfig {
@@ -32,12 +32,12 @@ export interface MenuConfig {
 }
 
 /**
- * Menubar - A configurable accessible menu component
+ * AdvancedMenu - A configurable accessible menu component
  * Provides full keyboard navigation, mobile controls, and ARIA support
  *
  * @example
  * ```typescript
- * const menu = new Menubar({
+ * const menu = new AdvancedMenu({
  *   menuSelector: '.c-menu',
  *   buttonClass: 'menu__link',
  *   linkClass: 'menu__link',
@@ -45,9 +45,9 @@ export interface MenuConfig {
  * await menu.init();
  * ```
  */
-export declare class Menubar {
+export declare class AdvancedMenu {
   /**
-   * Creates a new Menubar instance
+    * Creates a new AdvancedMenu instance
    * @param config - Optional configuration object. Uses sensible defaults if not provided.
    */
   constructor(config?: MenuConfig)
@@ -147,4 +147,4 @@ export declare class SimpleMenu {
   destroyAll(): void
 }
 
-export default Menubar
+export default AdvancedMenu
